@@ -88,7 +88,7 @@ export class NotificationsApi {
     return data.results
   }
 
-  async createManualEvent(payload: { title: string; message: string; severity: string; region_ids: string[]; neighborhood_ids: string[] }) {
+  async createManualEvent(payload: { title: string; message: string; severity: string; is_global: boolean; region_ids: string[]; neighborhood_ids: string[] }) {
     const { data } = await api.post<NotificationEvent>('/notification-events/', payload)
     return data
   }

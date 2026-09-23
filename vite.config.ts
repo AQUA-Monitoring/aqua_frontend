@@ -64,7 +64,12 @@ export default defineConfig(({ mode }) => {
       },
     },
     server: {
+      allowedHosts: ['5000.michalski.app'],
       proxy: {
+        '/api': {
+          target: env.VITE_PROXY_TARGET || 'https://api-aqua.michalski.app',
+          changeOrigin: true,
+        },
         '/hls': {
           target: hlsTarget,
           changeOrigin: true,

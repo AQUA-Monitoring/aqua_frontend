@@ -1,0 +1,22 @@
+services:
+  frontend-dev:
+    build:
+      context: .
+      target: development
+    ports:
+      - "127.0.0.1:5000:5173"
+    env_file:
+      - ../aqua_beta/.env
+    environment:
+      VITE_BASE_URL: /api/
+      VITE_HLS_TARGET: http://host.docker.internal:8188
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - .:/app
+      - frontend_node_modules:/app/node_modules
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173", "--strictPort"]
+    restart: unless-stopped
+
+volumes:
+  frontend_node_modules:

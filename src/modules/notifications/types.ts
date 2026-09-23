@@ -112,6 +112,7 @@ export interface NotificationEvent {
   destination_url: string
   regions: AlertRegion[]
   neighborhoods: { id: string; name: string; city: string }[]
+  is_global: boolean
   audience_count: number
   delivery_summary: { pending: number; sent: number; failed: number; expired: number }
   created_at: string
