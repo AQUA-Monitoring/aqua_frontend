@@ -9,11 +9,48 @@
 }
 
 html {
+  color-scheme: light;
   font-family: 'Poppins', sans-serif;
   transition: color 0.05s ease-in;
 }
 
-.dark {
+.aqua-scrollbar {
+  scrollbar-color: color-mix(in srgb, #2768ca 72%, transparent) transparent;
+  scrollbar-width: thin;
+}
+
+.aqua-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 8px;
+}
+
+.aqua-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.aqua-scrollbar::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, #2768ca 62%, transparent);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  border-inline-end-width: 4px;
+}
+
+.aqua-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #2768ca;
+}
+
+html.dark {
+  color-scheme: dark;
   background-color: #00182f;
+  color: #ffffff;
+}
+
+html.dark body {
+  background-color: #00182f;
+  color: #ffffff;
+}
+
+html.dark .material-symbols-outlined {
   color: #ffffff;
 }

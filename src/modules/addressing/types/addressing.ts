@@ -20,16 +20,14 @@ export interface TerritoryProperties {
 }
 
 export type TerritoryFeature = Feature<TerritoryGeometry, TerritoryProperties>
-export type TerritoryFeatureCollection = FeatureCollection<
-  TerritoryGeometry,
-  TerritoryProperties
->
+export type TerritoryFeatureCollection = FeatureCollection<TerritoryGeometry, TerritoryProperties>
 
 export type TerritoryCatalogSource = 'canonical' | 'local-fallback' | 'unavailable'
 
 export interface TerritoryCatalogOption {
   id: string
   name: string
+  city?: string
   regionId: string | null
 }
 
@@ -41,6 +39,7 @@ export interface TerritoryCatalog {
 export interface TerritoryCatalogNeighborhoodDto {
   id: string
   name: string
+  city?: string
   city_id?: string | null
   region?: { id: string; name: string } | null
 }
@@ -48,6 +47,7 @@ export interface TerritoryCatalogNeighborhoodDto {
 export interface TerritoryCatalogRegionDto {
   id: string
   name: string
+  city?: string
   neighborhoods?: TerritoryCatalogNeighborhoodDto[]
 }
 
@@ -106,10 +106,7 @@ export interface ReferenceTerritoryProperties {
   sourceRecordId: string | null
 }
 
-export type ReferenceTerritoryFeature = Feature<
-  TerritoryGeometry,
-  ReferenceTerritoryProperties
->
+export type ReferenceTerritoryFeature = Feature<TerritoryGeometry, ReferenceTerritoryProperties>
 
 export interface ReferenceTerritoryCollection {
   type: 'FeatureCollection'

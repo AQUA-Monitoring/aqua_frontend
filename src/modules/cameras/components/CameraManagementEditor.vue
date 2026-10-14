@@ -2,6 +2,7 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { useMediaQuery } from '@vueuse/core'
 import CameraStatusBadge from './CameraStatusBadge.vue'
+import CameraMonitoringTimeline from './CameraMonitoringTimeline.vue'
 import type { CameraApiItem, CameraStatus, CameraUpdatePayload } from '../types/camera'
 import { cameraAddressLabel, cameraCoordinates } from '../utils/cameraPresentation'
 import {
@@ -70,7 +71,7 @@ function submit() {
 function focusableElements() {
   return Array.from(
     panel.value?.querySelectorAll<HTMLElement>(
-      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
     ) ?? [],
   )
 }
@@ -253,5 +254,7 @@ onBeforeUnmount(() => {
         </button>
       </footer>
     </form>
+
+    <CameraMonitoringTimeline :key="camera.id" :camera-id="camera.id" />
   </section>
 </template>

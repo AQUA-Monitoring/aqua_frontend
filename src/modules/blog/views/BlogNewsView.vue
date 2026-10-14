@@ -49,7 +49,7 @@ watch(() => props.id, loadPost, { immediate: true })
       <p class="mt-2 text-gray-600 dark:text-gray-300">
         Verifique o endereço ou retorne para a página do blog.
       </p>
-      <RouterLink to="/blog" class="mt-5 inline-block font-semibold text-[#0453AF] hover:underline">
+      <RouterLink to="/blog" class="mt-5 inline-block font-semibold text-[#0453AF] hover:underline dark:text-blue-300">
         Voltar ao blog
       </RouterLink>
     </div>
@@ -63,15 +63,15 @@ watch(() => props.id, loadPost, { immediate: true })
       class="w-full h-48 md:h-96 object-cover rounded-2xl mb-4 md:mb-6"
     />
 
-    <h1 class="text-xl md:text-3xl font-semibold mb-2 leading-tight">
+    <h1 class="text-xl md:text-3xl font-semibold mb-2 leading-tight dark:text-white">
       {{ post.title }}
     </h1>
 
-    <p class="text-blue-500 text-xs md:text-sm mb-4 md:mb-6">
+    <p class="text-blue-500 text-xs md:text-sm mb-4 md:mb-6 dark:text-blue-300">
       {{ post.author }}
     </p>
 
-    <div class="space-y-4 md:space-y-6 text-gray-700 leading-relaxed text-sm md:text-base">
+    <div class="space-y-4 md:space-y-6 text-gray-700 leading-relaxed text-sm md:text-base dark:text-slate-200">
       <p>
         {{ post.content }}
       </p>
@@ -105,7 +105,7 @@ watch(() => props.id, loadPost, { immediate: true })
         :href="post.reference_url"
         target="_blank"
         rel="noopener noreferrer"
-        class="mt-2 inline-block break-words font-medium text-[#0453AF] hover:underline"
+        class="mt-2 inline-block break-words font-medium text-[#0453AF] hover:underline dark:text-blue-300"
       >
         {{ post.reference_title }}
       </a>

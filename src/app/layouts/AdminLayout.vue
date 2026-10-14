@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted } from 'vue'
+import { computed, onBeforeUnmount, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import { HeaderComp, FooterComp, MobileMenu } from '@/shared'
 import { useFloodPointOfflineQueue, useFloodPointsStore } from '@/modules/flood-points'
@@ -55,33 +56,58 @@ const menu: IMenu = {
       link: '/admin/cameras',
     },
     {
+      label: 'Inteligência do monitoramento',
+      icon: 'model_training',
+      link: '/admin/inteligencia',
+    },
+    {
       label: 'Alertas operacionais',
       icon: 'notifications_active',
       link: '/admin/alertas',
     },
   ],
 }
+const route = useRoute()
+const activeLink = computed(() =>
+  [...menu.options]
+    .sort((a, b) => b.link.length - a.link.length)
+    .find((item) => route.path === item.link || route.path.startsWith(`${item.link}/`))?.link,
+)
+const shortLabels = ['Início', 'Novo ponto', 'Nova câmera', 'Câmeras', 'Inteligência', 'Alertas']
 </script>
 
 <template>
   <div class="min-h-dvh">
     <HeaderComp :title="String($route.name)" v-bind="navigationAuth" />
     <main
-      class="min-h-[64vh] relative md:flex grid justify-between gap-10 pb-30 md:pb-10 md:px-15 lg:px-20"
+      class="relative mx-auto grid min-h-[64vh] w-full grid-cols-1 items-start gap-6 px-4 pb-30 sm:px-6 md:pb-10 lg:grid-cols-[4.5rem_minmax(0,1fr)] lg:gap-6 lg:px-8"
     >
-      <nav class="bg-[#0453AF] rounded-full text-white w-20 lg:block hidden">
-        <ul class="grid justify-center gap-7 px-7 py-10">
-          <li v-for="(item, index) in menu.options" :key="index">
-            <RouterLink :to="item.link" :aria-label="item.label" :title="item.label">
-              <span class="material-symbols-outlined">{{ item.icon }}</span>
+      <nav
+        aria-label="Menu da administração"
+        class="min-w-0 rounded-3xl bg-[#0453AF] p-2 text-white lg:self-stretch"
+      >
+        <ul class="grid grid-cols-3 gap-1 sm:grid-cols-6 lg:sticky lg:top-6 lg:grid-cols-1 lg:gap-3 lg:py-3">
+          <li v-for="(item, index) in menu.options" :key="item.link" class="min-w-0">
+            <RouterLink
+              :to="item.link"
+              :aria-label="item.label"
+              :title="item.label"
+              :aria-current="activeLink === item.link ? 'page' : undefined"
+              :class="{ 'bg-white/20': activeLink === item.link }"
+              class="flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 text-center lg:min-h-11 transition-colors hover:bg-white/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              <span class="material-symbols-outlined" aria-hidden="true">{{ item.icon }}</span>
+              <span class="text-[11px] leading-tight lg:sr-only">{{ shortLabels[index] }}</span>
             </RouterLink>
           </li>
         </ul>
       </nav>
 
-      <RouterView />
-      <MobileMenu :title="String($route.name)" :user-type="navigationAuth.userType" />
+      <div class="min-w-0">
+        <RouterView />
+      </div>
     </main>
+    <MobileMenu :title="String($route.name)" :user-type="navigationAuth.userType" />
     <FooterComp />
   </div>
 </template>

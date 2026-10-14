@@ -19,69 +19,62 @@ onMounted(() => notifications.loadOpenCount().catch(() => undefined))
 </script>
 
 <template>
-  <section class="grid lg:flex justify-between gap-10 px-10 lg:px-0">
-    <div class="mt-5 lg:w-[40%]">
-      <h1 class="font-semibold text-5xl hidden lg:block">Área de Administração</h1>
-      <p class="text-[#0453AF] font-semibold text-xl mt-2 mb-5 lg:mb-10">
-        Bem-vindo, {{ user?.name }}!
-      </p>
+  <section class="grid min-w-0 gap-6 lg:gap-8">
+    <header class="flex flex-wrap items-center justify-between gap-4">
+      <div class="min-w-0">
+        <h1 class="hidden text-3xl font-semibold lg:block xl:text-4xl">Área de Administração</h1>
+        <p class="mt-2 text-lg font-semibold break-words text-[#0453AF] dark:text-blue-200">
+          Bem-vindo, {{ user?.name }}!
+        </p>
+      </div>
+    </header>
 
-      <RouterLink
-        to="/admin/registrar-ponto"
-        class="bg-[#2768CA]/20 text-[#2768CA] rounded-2xl w-full py-2 flex flex-col justify-center items-center lg:hidden"
-      >
-        <span class="material-symbols-outlined">add</span>
-        <span> Adicionar ponto </span>
-      </RouterLink>
-
-      <RouterLink
-        to="/admin/alertas"
-        class="my-4 flex items-center justify-between rounded-2xl border border-[#2768CA]/30 bg-[#2768CA]/10 p-4 text-[#0750AF] dark:text-blue-200"
-      >
-        <span><strong class="block">Alertas operacionais</strong><small>Indícios aguardando revisão humana</small></span>
-        <span class="rounded-full bg-[#2768CA] px-3 py-1 font-semibold text-white" :aria-label="`${notifications.openCount} indícios abertos`">{{ notifications.openCount }}</span>
-      </RouterLink>
-
-      <div class="gap-5 hidden lg:grid">
-        <TablePoints :points="tablePoints" />
-        <CamerasComp :cameras="cameras" :loading="camerasLoading" :error="camerasError" />
+    <div class="grid min-w-0 items-stretch gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+      <div class="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-1">
+        <RouterLink
+          to="/admin/alertas"
+          class="flex items-center justify-between gap-3 rounded-2xl border border-[#2768CA]/30 bg-[#2768CA]/10 p-5 text-[#0750AF] dark:text-blue-200"
+        >
+          <span><strong class="block">Alertas operacionais</strong><small>Indícios aguardando revisão humana</small></span>
+          <span class="shrink-0 rounded-full bg-[#2768CA] px-3 py-1 font-semibold text-white" :aria-label="`${notifications.openCount} indícios abertos`">{{ notifications.openCount }}</span>
+        </RouterLink>
+        <RouterLink
+          to="/admin/inteligencia"
+          class="rounded-2xl border border-[#2768CA]/30 bg-[#2768CA]/10 p-5 text-[#0750AF] dark:text-blue-200"
+        >
+          <strong class="block">Inteligência do monitoramento</strong>
+          <small>Revisões, base de aprendizado, treinamentos e versões</small>
+        </RouterLink>
+        <div class="min-w-0 sm:col-span-2 xl:col-span-1">
+          <TablePoints :points="tablePoints" />
+        </div>
+        <div class="min-w-0 sm:col-span-2 xl:col-span-1">
+          <CamerasComp :cameras="cameras" :loading="camerasLoading" :error="camerasError" />
+        </div>
+      </div>
+      <div class="admin-map-column flex min-w-0 flex-col">
+        <SelectFloodAlert v-model:alert="currentAlert" />
+        <MapboxComp class="admin-map" :cameras="cameras" :show-items="true" :show-desktop-info-panel="false" />
       </div>
     </div>
 
-    <div class="lg:w-[60%]">
-      <SelectFloodAlert v-model:alert="currentAlert" />
-      <MapboxComp class="lg:!h-[max(42vw,calc(100dvh-7rem),76rem)] lg:!min-h-[44rem]" :cameras="cameras"
-        :show-items="true" :show-desktop-info-panel="false" />
-    </div>
-
-    <div class="grid gap-5 lg:hidden">
-      <CamerasComp :cameras="cameras" :loading="camerasLoading" :error="camerasError" />
-      <TablePoints :points="tablePoints" />
-    </div>
   </section>
-
-  <!-- <section class="grid justify-between gap-10 px-10 md:px-0">
-    <div class="mt-5 md:w-[40%]">
-      <h1 class="font-semibold text-5xl hidden">Área de Administração</h1>
-      <p class="text-[#0453AF] font-semibold text-xl mt-2 md:mb-10">Bem-vindo, {{ user?.name }}!</p>
-
-      <RouterLink
-        to="/admin/registrar-ponto"
-        class="bg-[#2768CA]/20 text-[#2768CA] rounded-2xl w-full py-2 flex flex-col justify-center items-center my-5 md:hidden"
-      >
-        <span class="material-symbols-outlined">add</span>
-        <span> Adicionar ponto </span>
-      </RouterLink>
-
-      <div class="grid gap-5">
-        <TablePoints :points="tablePoints" />
-        <CamerasComp />
-      </div>
-    </div>
-
-    <div class="md:w-[60%]">
-      <SelectFloodAlert v-model:alert="currentAlert" />
-      <MapboxComp />
-    </div>
-  </section> -->
 </template>
+
+<style scoped>
+.admin-map {
+  height: max(22rem, calc(100dvh - 12rem));
+  min-height: 0;
+}
+@media (min-width: 80rem) {
+  .admin-map-column {
+    min-height: calc(100dvh - 12rem);
+  }
+
+  .admin-map {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 22rem;
+  }
+}
+</style>

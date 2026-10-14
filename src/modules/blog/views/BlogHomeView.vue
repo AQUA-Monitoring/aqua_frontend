@@ -40,7 +40,7 @@ const topics: Topic[] = [
             'w-full h-auto',
           ]"
         >
-          <h3 class="text-[#0453AF] text-xl md:text-2xl p-5 font-semibold">
+          <h3 class="text-[#0453AF] text-xl md:text-2xl p-5 font-semibold dark:text-white">
             {{ topic.title }}
           </h3>
           <p class="p-5 dark:text-[#FFFFFF]">{{ topic.description }}</p>

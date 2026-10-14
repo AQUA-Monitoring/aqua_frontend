@@ -31,8 +31,10 @@ const confirmSelection = () => {
   <div
     class="relative mb-5 w-full rounded-full bg-white shadow-lg lg:bg-transparent dark:bg-[#000D19] lg:dark:bg-transparent"
   >
-    <p
-      class="relative grid cursor-pointer rounded-full p-1 text-center text-sm"
+    <button
+      type="button"
+      :aria-expanded="showAll"
+      class="relative grid min-h-12 w-full cursor-pointer rounded-3xl px-10 py-2 text-center text-sm"
       :class="currentAlert.bgClass"
       @click="toggle"
     >
@@ -43,7 +45,7 @@ const confirmSelection = () => {
       {{ currentAlert.description }}
 
       <span class="material-symbols-outlined absolute top-3 right-2"> keyboard_arrow_down </span>
-    </p>
+    </button>
 
     <transition name="fade">
       <div

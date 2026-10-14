@@ -85,7 +85,7 @@ const emit = defineEmits<{
     <button
       v-if="hasMore && !loading"
       type="button"
-      class="mt-3 min-h-11 w-full rounded-xl border border-[#2768CA] px-3 py-2 text-sm font-semibold text-[#2768CA] disabled:opacity-60"
+      class="mt-3 min-h-11 w-full rounded-xl border border-[#2768CA] px-3 py-2 text-sm font-semibold text-[#2768CA] disabled:opacity-60 dark:text-blue-300"
       :disabled="loadingMore"
       @click="emit('loadMore')"
     >

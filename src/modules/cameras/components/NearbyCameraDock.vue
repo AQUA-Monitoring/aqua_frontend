@@ -53,7 +53,7 @@ function distanceLabel(distance: number) {
     </div>
     <div
       v-else
-      class="gap-3 overflow-auto pb-2"
+      class="aqua-scrollbar gap-3 overflow-auto pb-2"
       :class="
         vertical ? 'grid max-h-[calc(100dvh-14rem)] grid-cols-1 pr-1' : 'flex snap-x snap-mandatory'
       "

@@ -106,28 +106,134 @@ async function handleUpdateName(values: FormValues) {
 </script>
 
 <template>
-  <section class="mx-auto lg:p-10">
-    <h1 class="text-2xl font-semibold text-center">Segurança</h1>
+  <section class="profile-security min-w-0 py-6" aria-labelledby="security-title">
+    <header class="mb-6">
+      <h1 id="security-title" class="text-2xl font-semibold">Segurança</h1>
+      <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+        Gerencie os dados e a segurança da sua conta.
+      </p>
+    </header>
 
-    <BaseForm
-      :form-fields="[nameField]"
-      :button-text="nameField.buttonText"
-      :is-delete-button="nameField.isDeleteButton"
-      @submit="handleUpdateName"
-    />
+    <div class="grid min-w-0 items-start gap-6 xl:grid-cols-2">
+      <section class="security-card grid gap-6" aria-label="Dados da conta">
+        <BaseForm
+          :form-fields="[nameField]"
+          :button-text="nameField.buttonText"
+          :is-delete-button="nameField.isDeleteButton"
+          @submit="handleUpdateName"
+        />
 
-    <BaseForm
-      :form-fields="[emailField]"
-      :button-text="emailField.buttonText"
-      :is-delete-button="emailField.isDeleteButton"
-    />
+        <div class="security-email min-w-0 border-t border-slate-200 pt-6 dark:border-slate-700">
+          <BaseForm
+            :form-fields="[emailField]"
+            :button-text="emailField.buttonText"
+            :is-delete-button="emailField.isDeleteButton"
+          />
+        </div>
+      </section>
 
-    <BaseForm
-      v-for="(section, index) in securityFields"
-      :key="index"
-      :form-fields="[section]"
-      :button-text="section.buttonText"
-      :is-delete-button="section.isDeleteButton"
-    />
+      <section
+        v-for="section in securityFields"
+        :key="section.id"
+        class="security-card"
+        :class="{ 'security-card--danger xl:col-span-2': section.isDeleteButton }"
+        :aria-label="section.label"
+      >
+        <BaseForm
+          :form-fields="[section]"
+          :button-text="section.buttonText"
+          :is-delete-button="section.isDeleteButton"
+        />
+      </section>
+    </div>
   </section>
 </template>
+
+<style scoped>
+.security-card {
+  min-width: 0;
+  padding: 1.5rem;
+  border: 1px solid #dbe3ed;
+  border-radius: 1.25rem;
+  background: #fff;
+}
+
+.security-card :deep(h1:empty) {
+  display: none;
+}
+
+.security-card :deep(form) {
+  width: 100%;
+  min-width: 0;
+}
+
+.security-card :deep(form > div:last-child) {
+  margin-inline: 0;
+}
+
+.security-email :deep(form > div:first-child) {
+  margin-bottom: 0;
+}
+
+.security-card :deep(p) {
+  overflow-wrap: anywhere;
+}
+
+.security-card :deep(input) {
+  min-width: 0;
+}
+
+.security-card :deep(button[type='submit']) {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  margin-inline: 0;
+  padding-inline: 1.25rem;
+  font-size: 0.875rem;
+}
+
+.security-card--danger {
+  border-color: #f1cbd0;
+}
+
+.security-card--danger :deep(h2) {
+  color: #a13240;
+}
+
+@media (min-width: 640px) {
+  .security-card :deep(button[type='submit']) {
+    width: auto;
+    min-width: min(12rem, 100%);
+  }
+
+  .security-card--danger :deep(form) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 1.25rem;
+  }
+
+  .security-card--danger :deep(form > div:first-child) {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 479px) {
+  .security-card {
+    padding: 1rem;
+  }
+}
+
+.dark .security-card {
+  border-color: #314760;
+  background: #102b47;
+}
+
+.dark .security-card--danger {
+  border-color: #7a4654;
+}
+
+.dark .security-card--danger :deep(h2) {
+  color: #ffadb6;
+}
+</style>

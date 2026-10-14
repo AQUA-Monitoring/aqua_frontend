@@ -110,23 +110,24 @@ function handleDialogKeydown(event: KeyboardEvent) {
 </script>
 
 <template>
-  <section class="grid w-full gap-3" aria-labelledby="admin-priority-title">
-    <div class="flex items-center justify-between">
+  <section class="priority-cameras grid min-w-0 w-full gap-3" aria-labelledby="admin-priority-title">
+    <div class="flex flex-wrap items-center justify-between gap-3">
       <h3 id="admin-priority-title" class="text-xl font-bold">Câmeras prioritárias</h3>
       <RouterLink to="/cameras" class="text-sm font-semibold text-[#2768CA]">Ver todas</RouterLink>
     </div>
     <p v-if="loading" class="text-sm text-slate-500" role="status">Carregando câmeras...</p>
     <p v-else-if="error" class="text-sm text-red-700" role="alert">{{ error }}</p>
-    <div v-else class="grid gap-3 sm:grid-cols-2">
+    <div v-else class="priority-grid grid gap-4">
       <article
         v-for="(camera, index) in prioritySlots"
         :key="camera?.id ?? `empty-${index}`"
-        class="overflow-hidden rounded-2xl border border-slate-200 bg-white transition-colors hover:border-[#2768CA] dark:border-slate-700 dark:bg-[#001C3B]"
+        class="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition-colors hover:border-[#2768CA] dark:border-slate-700 dark:bg-[#001C3B]"
       >
         <template v-if="camera">
           <div class="relative aspect-video bg-[#00182F]">
             <HlsPlayer
               v-if="camera.preview_url"
+              class="absolute! inset-0"
               :src="camera.preview_url"
               autoplay
               muted
@@ -144,18 +145,18 @@ function handleDialogKeydown(event: KeyboardEvent) {
               {{ formatNullablePercent(camera.operational.analysis.probabilities.flooded) }}
             </span>
           </div>
-          <div class="p-4">
+          <div class="flex flex-1 flex-col p-4">
             <div class="flex items-start justify-between gap-2">
               <p class="line-clamp-2 text-sm font-semibold">{{ camera.description }}</p>
               <span class="material-symbols-outlined text-[#2768CA]" aria-hidden="true">videocam</span>
             </div>
             <p class="mt-3 text-xs font-semibold">{{ cameraPresentation(camera).label }}</p>
-            <p class="mt-1 text-xs text-slate-600 dark:text-slate-300">
+            <p class="mt-1 mb-3 text-xs text-slate-600 dark:text-slate-300">
               {{ formatCameraDate(camera.operational.analysis.analyzed_at) }}
             </p>
             <button
               type="button"
-              class="mt-3 min-h-11 w-full rounded-xl bg-[#2768CA] px-4 text-sm font-semibold text-white focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#2768CA]"
+              class="mt-auto min-h-11 w-full rounded-xl bg-[#2768CA] px-4 text-sm font-semibold text-white focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#2768CA]"
               @click="inspect(camera)"
             >
               Inspecionar
@@ -212,3 +213,15 @@ function handleDialogKeydown(event: KeyboardEvent) {
     </div>
   </section>
 </template>
+
+<style scoped>
+.priority-cameras {
+  container-type: inline-size;
+}
+@container (min-width: 28rem) {
+  .priority-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container (min-width: 64rem) {
+  .priority-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+</style>

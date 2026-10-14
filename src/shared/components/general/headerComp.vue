@@ -65,7 +65,7 @@ const desktopMenuAccount: MenuItem[] = [
 <template>
   <header
     v-if="!(isMobile && title === 'Início')"
-    class="z-10 bg-transparent px-7 lg:bg-white lg:px-20 xl:px-25 py-3 lg:dark:bg-[#00182F]"
+    class="z-10 bg-transparent px-7 lg:bg-white lg:px-20 xl:px-25 py-3 dark:bg-[#00182F] dark:text-white"
   >
     <nav class="lg:flex lg:items-center lg:justify-between">
       <ul class="flex items-center justify-between lg:hidden">

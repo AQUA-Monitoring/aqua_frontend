@@ -4,8 +4,6 @@ import { useMediaQuery } from '@vueuse/core'
 import { RouterLink, useRouter } from 'vue-router'
 import HlsPlayer from './hlsPlayer.vue'
 import CameraAnalysisDetails from './CameraAnalysisDetails.vue'
-import CameraMonitoringTimeline from './CameraMonitoringTimeline.vue'
-import { useAuthStore } from '@/modules/auth'
 import CameraStatusBadge from './CameraStatusBadge.vue'
 import NearbyCameraDock from './NearbyCameraDock.vue'
 import FloodCameraMonitoringApi from '../FloodCameraMonitoringApi'
@@ -32,7 +30,6 @@ const props = withDefaults(
 )
 const emit = defineEmits<{ close: []; selectNearby: [camera: NearbyCameraItem] }>()
 const router = useRouter()
-const auth = useAuthStore()
 const cameraApi = new FloodCameraMonitoringApi()
 const playing = ref(false)
 const nearbyCameras = ref<NearbyCameraItem[]>([])
@@ -155,12 +152,13 @@ onBeforeUnmount(() => {
 <template>
   <section
     ref="panelElement"
-    class="fixed inset-x-0 bottom-0 z-[70] max-h-[88dvh] overflow-y-auto rounded-t-4xl border border-slate-200 bg-white p-5 shadow-2xl lg:sticky lg:top-5 lg:z-40 lg:max-h-[calc(100dvh-2.5rem)] lg:rounded-3xl dark:border-slate-700 dark:bg-[#001C3B]"
+    class="fixed inset-x-0 bottom-0 z-[70] flex max-h-[88dvh] flex-col overflow-hidden rounded-t-4xl border border-slate-200 bg-white p-4 pr-1 shadow-2xl lg:sticky lg:top-5 lg:z-40 lg:max-h-[calc(100dvh-2.5rem)] lg:rounded-3xl dark:border-slate-700 dark:bg-[#001C3B]"
     :role="props.externalFocusManagement || isDesktop ? 'region' : 'dialog'"
     :aria-modal="props.externalFocusManagement || isDesktop ? undefined : true"
     aria-labelledby="camera-inspection-title"
     tabindex="-1"
   >
+    <div class="aqua-scrollbar min-h-0 overflow-y-auto p-2">
     <div
       class="mx-auto mb-4 h-1.5 w-12 rounded-full bg-slate-300 lg:hidden dark:bg-slate-600"
     ></div>
@@ -297,9 +295,7 @@ onBeforeUnmount(() => {
             Esta câmera pode ser inspecionada ao vivo, mas não exibe predições enquanto estiver offline.
           </p>
         </div>
-        <CameraMonitoringTimeline v-if="auth.user?.type === 'admin'" :camera-id="camera.id" />
         <CameraAnalysisDetails
-          v-else
           :camera="camera"
           :wide="props.nearbyLayout === 'side'"
         />
@@ -329,5 +325,6 @@ onBeforeUnmount(() => {
     >
       Abrir página da câmera
     </RouterLink>
+    </div>
   </section>
 </template>

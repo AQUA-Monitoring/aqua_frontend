@@ -82,6 +82,12 @@ const router = createRouter({
           props: true,
         },
         {
+          path: '/admin/inteligencia',
+          name: 'Inteligência do monitoramento',
+          component: () => import('@/modules/intelligence/MonitoringIntelligenceView.vue'),
+          meta: { requiresAuth: true, requiresAdmin: true },
+        },
+        {
           path: '/admin/alertas',
           name: 'Alertas operacionais',
           component: () =>

@@ -75,7 +75,7 @@ function editLocation() {
   <section class="mx-auto w-full max-w-[1600px] px-4 py-5 dark:text-white sm:px-6 lg:px-0">
     <header class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p class="text-sm font-semibold tracking-[0.16em] text-[#2768CA] uppercase">Operação</p>
+        <p class="text-sm font-semibold tracking-[0.16em] text-[#2768CA] uppercase dark:text-blue-300">Operação</p>
         <h1 class="mt-1 text-3xl font-bold text-slate-900 dark:text-white">
           Gerenciar câmeras
         </h1>
@@ -201,7 +201,7 @@ function editLocation() {
       </p>
       <button
         type="button"
-        class="min-h-11 rounded-xl border border-[#2768CA] px-4 text-sm font-semibold text-[#2768CA] disabled:opacity-60"
+        class="min-h-11 rounded-xl border border-[#2768CA] px-4 text-sm font-semibold text-[#2768CA] disabled:opacity-60 dark:text-blue-300"
         :disabled="workspace.loading.value || workspace.refreshing.value"
         @click="workspace.refresh"
       >
@@ -230,7 +230,7 @@ function editLocation() {
 
       <div
         v-if="workspace.selectedLoading.value"
-        class="grid min-h-72 place-items-center rounded-3xl border border-slate-200 text-slate-500 dark:border-slate-700"
+        class="grid min-h-72 place-items-center rounded-3xl border border-slate-200 text-slate-500 dark:border-slate-700 dark:text-slate-300"
         role="status"
       >
         Carregando detalhes da câmera…
@@ -244,7 +244,7 @@ function editLocation() {
       </div>
       <div
         v-else-if="!workspace.selected.value"
-        class="hidden min-h-72 place-items-center rounded-3xl border border-dashed border-slate-300 p-8 text-center text-slate-500 lg:grid dark:border-slate-600"
+        class="hidden min-h-72 place-items-center rounded-3xl border border-dashed border-slate-300 p-8 text-center text-slate-500 lg:grid dark:border-slate-600 dark:text-slate-300"
       >
         Selecione uma câmera para visualizar e editar seus dados.
       </div>

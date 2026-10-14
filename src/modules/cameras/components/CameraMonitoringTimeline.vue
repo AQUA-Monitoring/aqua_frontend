@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import api from '@/app/plugins/axios'
 
 const props = defineProps<{ cameraId: string }>()
@@ -8,9 +8,40 @@ interface Run {
   frames: Array<{ normal: number; medium: number; flooded: number }>
   evidence: Array<{ id: string; url: string; sha256: string }>
 }
+interface Monitoring {
+  interval_seconds: number
+  next_analysis_at: string
+  delay_seconds: number
+  scheduling_status: 'SCHEDULED' | 'DUE' | 'QUEUED' | 'RUNNING' | 'WAITING_CAPACITY'
+  trend: { status: 'RISING' | 'STABLE' | 'INSUFFICIENT_DATA'; values: number[] }
+}
+interface Capacity {
+  status: 'NORMAL' | 'LIMITED' | 'SUSPENDED' | 'WARMUP' | 'UNAVAILABLE' | 'DISABLED'
+}
+const monitoring = ref<Monitoring | null>(null)
+const capacity = ref<Capacity | null>(null)
+const schedulingLabels: Record<Monitoring['scheduling_status'], string> = {
+  SCHEDULED: 'Próxima análise prevista', DUE: 'Aguardando despacho',
+  QUEUED: 'Análise na fila', RUNNING: 'Análise em andamento',
+  WAITING_CAPACITY: 'Aguardando capacidade',
+}
+const capacityLabels: Record<Capacity['status'], string> = {
+  NORMAL: 'Capacidade disponível', LIMITED: 'Ritmo reduzido por carga do servidor',
+  SUSPENDED: 'Novas análises temporariamente suspensas por carga do servidor',
+  WARMUP: 'Avaliando capacidade do servidor', UNAVAILABLE: 'Medição de capacidade indisponível; ritmo limitado',
+  DISABLED: 'Controle de capacidade desativado',
+}
+const trendLabel = computed(() => monitoring.value?.trend.status === 'RISING'
+  ? 'Crescimento sustentado do índice'
+  : monitoring.value?.trend.status === 'STABLE'
+    ? 'Sem crescimento sustentado nas últimas análises'
+    : 'Aguardando análises válidas para avaliar a tendência')
 const runs = ref<Run[]>([])
 const level = ref('WATCH')
 const currentLevel = ref('NORMAL')
+const levelLabels: Record<string, string> = {
+  NORMAL: 'Normal', WATCH: 'Observação', CRITICAL: 'Crítico', RECOVERY: 'Recuperação',
+}
 const reason = ref('')
 const error = ref('')
 const busy = ref(false)
@@ -27,6 +58,8 @@ async function load() {
     if (id !== requestId) return
     runs.value = data.runs
     currentLevel.value = data.monitoring?.level ?? 'NORMAL'
+    monitoring.value = data.monitoring?.interval_seconds ? data.monitoring : null
+    capacity.value = data.capacity ?? null
   } catch {
     if (id === requestId) error.value = 'Não foi possível carregar o histórico de monitoramento.'
   }
@@ -65,6 +98,7 @@ async function showEvidence(url: string) {
 }
 watch(() => props.cameraId, () => {
   runs.value = []; selectedRun.value = ''
+  monitoring.value = null; capacity.value = null
   if (preview.value) URL.revokeObjectURL(preview.value)
   preview.value = ''
   void load()
@@ -74,7 +108,19 @@ onBeforeUnmount(() => { ++requestId; if (preview.value) URL.revokeObjectURL(prev
 
 <template>
   <section class="mt-5 space-y-3 rounded-2xl border border-slate-300 p-4 dark:border-slate-700">
-    <h3 class="font-semibold">Monitoramento operacional · {{ currentLevel }}</h3>
+    <h3 class="font-semibold">Monitoramento operacional · {{ levelLabels[currentLevel] ?? currentLevel }}</h3>
+    <div v-if="monitoring" class="space-y-1 rounded-lg bg-slate-100 p-3 text-sm dark:bg-slate-800" aria-live="polite">
+      <p class="font-medium">{{ schedulingLabels[monitoring.scheduling_status] }}</p>
+      <p>Intervalo previsto: {{ monitoring.interval_seconds / 60 }} min após a conclusão.</p>
+      <p>Próxima análise prevista: {{ new Date(monitoring.next_analysis_at).toLocaleString('pt-BR') }}</p>
+      <p v-if="monitoring.delay_seconds > 0 && ['DUE', 'WAITING_CAPACITY'].includes(monitoring.scheduling_status)">
+        Atraso no agendamento: {{ Math.ceil(monitoring.delay_seconds) }} s.
+      </p>
+      <p>{{ trendLabel }}</p>
+      <p v-if="monitoring.trend.values.length">Índice nas últimas análises: {{ monitoring.trend.values.map(value => `${value.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`).join(' → ') }}.</p>
+      <p class="text-xs">O índice é uma estimativa do modelo, não uma medida da altura da água. Os horários dependem da capacidade disponível.</p>
+      <p v-if="capacity">{{ capacityLabels[capacity.status] }}</p>
+    </div>
     <p v-if="error" role="alert" class="text-sm text-red-600">{{ error }}</p>
     <label class="block text-sm">Justificativa
       <textarea v-model="reason" class="mt-1 w-full rounded border p-2 dark:bg-slate-900" maxlength="500" />
@@ -88,7 +134,7 @@ onBeforeUnmount(() => { ++requestId; if (preview.value) URL.revokeObjectURL(prev
       <button class="rounded border p-2" @click="load">Atualizar histórico</button>
     </div>
     <p v-if="!runs.length" class="text-sm">Nenhuma sequência registrada pelo monitoramento adaptativo.</p>
-    <ol class="max-h-96 space-y-3 overflow-y-auto">
+    <ol class="aqua-scrollbar max-h-96 space-y-3 overflow-y-auto pr-1">
       <li v-for="run in runs" :key="run.id" class="rounded border border-slate-200 p-3 dark:border-slate-700">
         <p>{{ new Date(run.started_at).toLocaleString('pt-BR') }} · {{ run.level }}</p>
         <p class="text-xs">Modelo {{ run.model_version || 'indisponível' }} · {{ run.frames.length }} frames</p>

@@ -8,6 +8,7 @@ import type {
   SavedPlace,
   NotificationEvent,
 } from './types'
+import type { Paginated } from '@/shared'
 
 export class NotificationsApi {
   async listAlerts(filters: OperationalAlertFilters = {}) {
@@ -40,8 +41,20 @@ export class NotificationsApi {
   }
 
   async listRegionSubscriptions() {
-    const { data } = await api.get<{ results: RegionSubscription[] }>('/region-subscriptions/')
-    return data.results
+    const subscriptions: RegionSubscription[] = []
+    let page = 1
+    while (true) {
+      const { data } = await api.get<Paginated<RegionSubscription>>('/region-subscriptions/', {
+        params: { page, page_size: 100 },
+      })
+      subscriptions.push(...data.results)
+      if (!data.next) return subscriptions
+      page += 1
+    }
+  }
+
+  async followAllRegions() {
+    await api.post('/region-subscriptions/follow-all/')
   }
 
   async followRegion(regionId: string) {
@@ -56,7 +69,9 @@ export class NotificationsApi {
   }
 
   async followNeighborhood(neighborhoodId: string) {
-    const { data } = await api.post<RegionSubscription>('/region-subscriptions/', { neighborhood_id: neighborhoodId })
+    const { data } = await api.post<RegionSubscription>('/region-subscriptions/', {
+      neighborhood_id: neighborhoodId,
+    })
     return data
   }
 
@@ -84,17 +99,28 @@ export class NotificationsApi {
   }
 
   async listEvents(params: Record<string, string> = {}) {
-    const { data } = await api.get<{ results: NotificationEvent[] }>('/notification-events/', { params })
+    const { data } = await api.get<{ results: NotificationEvent[] }>('/notification-events/', {
+      params,
+    })
     return data.results
   }
 
-  async createManualEvent(payload: { title: string; message: string; severity: string; is_global: boolean; region_ids: string[]; neighborhood_ids: string[] }) {
+  async createManualEvent(payload: {
+    title: string
+    message: string
+    severity: string
+    is_global: boolean
+    region_ids: string[]
+    neighborhood_ids: string[]
+  }) {
     const { data } = await api.post<NotificationEvent>('/notification-events/', payload)
     return data
   }
 
   async previewEvent(id: string) {
-    const { data } = await api.get<{ users: number; devices: number }>(`/notification-events/${id}/preview/`)
+    const { data } = await api.get<{ users: number; devices: number }>(
+      `/notification-events/${id}/preview/`,
+    )
     return data
   }
 

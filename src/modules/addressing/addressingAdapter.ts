@@ -18,6 +18,7 @@ export function adaptTerritoryCatalog(data: TerritoryCatalogDto): TerritoryCatal
     .map((region) => ({
       id: region.id,
       name: formatTerritoryLabel(region.name),
+      city: region.city,
       regionId: null,
     }))
     .sort((left, right) => left.name.localeCompare(right.name, 'pt-BR'))
@@ -31,6 +32,7 @@ export function adaptTerritoryCatalog(data: TerritoryCatalogDto): TerritoryCatal
     .map((neighborhood) => ({
       id: neighborhood.id,
       name: formatTerritoryLabel(neighborhood.name),
+      city: neighborhood.city,
       regionId: neighborhood.region?.id ?? null,
     }))
     .sort((left, right) => left.name.localeCompare(right.name, 'pt-BR'))
@@ -70,9 +72,7 @@ export const adaptReferenceTerritories = (
       referenceCityId: feature.properties.reference_city_id,
       referenceRegionId:
         feature.properties.reference_region_id ??
-        (feature.properties.type === 'region'
-          ? feature.properties.reference_territory_id
-          : null),
+        (feature.properties.type === 'region' ? feature.properties.reference_territory_id : null),
       referenceNeighborhoodId:
         feature.properties.reference_neighborhood_id ??
         (feature.properties.type === 'neighborhood'
