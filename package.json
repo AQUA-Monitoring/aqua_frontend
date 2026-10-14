@@ -11,6 +11,7 @@
     "type-check": "vue-tsc --build",
     "quality": "run-s type-check lint test build",
     "test": "vitest run",
+    "verify:production-build": "node scripts/verify-production-build.mjs",
     "lint": "run-s lint:oxlint lint:eslint",
     "lint:oxlint": "oxlint src",
     "lint:eslint": "eslint src --no-cache",

@@ -6,7 +6,7 @@ services:
     ports:
       - "127.0.0.1:5000:5173"
     env_file:
-      - ../aqua_beta/.env
+      - .env
     environment:
       VITE_BASE_URL: /api/
       VITE_HLS_TARGET: http://host.docker.internal:8188

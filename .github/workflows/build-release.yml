@@ -5,8 +5,14 @@ on:
     branches: [dev]
   workflow_dispatch:
     inputs:
+      environment:
+        description: Frontend environment
+        required: true
+        default: development
+        type: choice
+        options: [development, production]
       release_ref:
-        description: Full SHA on dev to publish (required for official; beta uses dev HEAD)
+        description: Full SHA on dev to publish (required for production; development uses dev HEAD)
         required: false
         type: string
 
@@ -14,12 +20,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: aqua-release-${{ github.repository }}
+  group: aqua-release-${{ github.repository }}-${{ inputs.environment || 'development' }}
   cancel-in-progress: false
 
 jobs:
   build:
-    if: github.repository == 'AQUA-Monitoring/aqua_beta' || github.event_name == 'workflow_dispatch'
+    if: github.repository == 'AQUA-Monitoring/aqua_frontend'
+    environment: ${{ inputs.environment || 'development' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
@@ -28,6 +35,7 @@ jobs:
     outputs:
       sha: ${{ steps.release.outputs.sha }}
       digest: ${{ steps.image.outputs.digest }}
+      environment: ${{ steps.release.outputs.environment }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -40,28 +48,28 @@ jobs:
           REQUESTED_SHA: ${{ inputs.release_ref }}
           EVENT_SHA: ${{ github.sha }}
           EVENT_NAME: ${{ github.event_name }}
-          REPOSITORY: ${{ github.repository }}
+          RELEASE_ENVIRONMENT: ${{ inputs.environment || 'development' }}
         shell: bash
         run: |
           set -euo pipefail
-          if [[ "$REPOSITORY" == AQUA-Monitoring/aqua_beta ]]; then
+          image=ghcr.io/aqua-monitoring/aqua-frontend
+          if [[ "$RELEASE_ENVIRONMENT" == development ]]; then
             sha=$(git rev-parse origin/dev)
-            image=ghcr.io/aqua-monitoring/aqua-beta
             if [[ "$EVENT_NAME" == push && "$EVENT_SHA" != "$sha" ]]; then
-              echo 'This beta build has been superseded.' >&2
+              echo 'This development build has been superseded.' >&2
               exit 1
             fi
             if [[ -n "$REQUESTED_SHA" && "$REQUESTED_SHA" != "$sha" ]]; then
-              echo 'Beta deploys only the current dev HEAD.' >&2
+              echo 'Development deploys only the current dev HEAD.' >&2
               exit 1
             fi
           else
             sha="$REQUESTED_SHA"
-            image=ghcr.io/aqua-monitoring/aqua-frontend
           fi
           [[ "$sha" =~ ^[0-9a-f]{40}$ ]]
           git merge-base --is-ancestor "$sha" origin/dev
           git checkout --detach "$sha"
+          echo "environment=$RELEASE_ENVIRONMENT" >> "$GITHUB_OUTPUT"
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           echo "image=$image" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-node@v4
@@ -72,10 +80,11 @@ jobs:
         run: npm ci --no-audit --no-fund && npm run quality
       - name: Check public build configuration
         env:
-          API_URL: ${{ vars.VITE_BASE_URL }}
+          VITE_BASE_URL: ${{ vars.VITE_BASE_URL }}
           MAPBOX_KEY: ${{ secrets.VITE_MAPBOX_API_KEY }}
         run: |
-          test "$API_URL" = 'https://api-aqua.michalski.app/api/'
+          test -n "$VITE_BASE_URL"
+          test "$VITE_BASE_URL" = 'https://api-aqua.michalski.app/api/'
           test -n "$MAPBOX_KEY"
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
@@ -90,7 +99,7 @@ jobs:
           context: .
           target: production
           push: true
-          tags: ${{ steps.release.outputs.image }}:${{ steps.release.outputs.sha }}
+          tags: ${{ steps.release.outputs.image }}:${{ steps.release.outputs.environment }}-${{ steps.release.outputs.sha }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
             org.opencontainers.image.revision=${{ steps.release.outputs.sha }}
@@ -108,8 +117,8 @@ jobs:
             VITE_FIREBASE_MESSAGING_SENDER_ID=${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
             VITE_FIREBASE_APP_ID=${{ vars.VITE_FIREBASE_APP_ID }}
             VITE_FIREBASE_MEASUREMENT_ID=${{ vars.VITE_FIREBASE_MEASUREMENT_ID }}
-          cache-from: type=gha,scope=${{ github.event.repository.name }}
-          cache-to: type=gha,mode=max,scope=${{ github.event.repository.name }}
+          cache-from: type=gha,scope=${{ github.event.repository.name }}-${{ steps.release.outputs.environment }}
+          cache-to: type=gha,mode=max,scope=${{ github.event.repository.name }}-${{ steps.release.outputs.environment }}
           provenance: mode=max
           sbom: true
       - name: Record release
@@ -117,9 +126,10 @@ jobs:
           SHA: ${{ steps.release.outputs.sha }}
           IMAGE: ${{ steps.release.outputs.image }}
           DIGEST: ${{ steps.image.outputs.digest }}
+          RELEASE_ENVIRONMENT: ${{ steps.release.outputs.environment }}
         run: |
-          jq -n --arg sha "$SHA" --arg image "$IMAGE@$DIGEST" --arg run "$GITHUB_RUN_ID" \
-            '{sha: $sha, image: $image, run_id: $run}' > release.json
+          jq -n --arg sha "$SHA" --arg image "$IMAGE@$DIGEST" --arg run "$GITHUB_RUN_ID" --arg environment "$RELEASE_ENVIRONMENT" \
+            '{sha: $sha, image: $image, run_id: $run, environment: $environment}' > release.json
           cat release.json >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
@@ -129,7 +139,7 @@ jobs:
 
   deploy:
     needs: build
-    if: vars.AQUA_DEPLOY_ENABLED == 'true'
+    environment: ${{ needs.build.outputs.environment }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -138,10 +148,11 @@ jobs:
       packages: read
     steps:
       - name: Deploy through restricted SSH command
+        if: vars.AQUA_DEPLOY_ENABLED == 'true'
         env:
           DEPLOY_HOST: ${{ vars.AQUA_DEPLOY_HOST }}
           DEPLOY_PORT: ${{ vars.AQUA_DEPLOY_PORT || '22' }}
-          DEPLOY_USER: ${{ github.repository == 'AQUA-Monitoring/aqua_beta' && 'aqua-deploy-beta' || 'aqua-deploy-frontend' }}
+          DEPLOY_USER: ${{ vars.AQUA_DEPLOY_USER }}
           SSH_KEY: ${{ secrets.AQUA_DEPLOY_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.AQUA_DEPLOY_KNOWN_HOSTS }}
           REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -152,6 +163,7 @@ jobs:
           set -euo pipefail
           [[ "$DEPLOY_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]+$ ]]
           [[ "$DEPLOY_PORT" =~ ^[0-9]{1,5}$ ]]
+          [[ "$DEPLOY_USER" =~ ^[a-z_][a-z0-9_-]*$ ]]
           test -n "$SSH_KEY"
           test -n "$KNOWN_HOSTS"
           umask 077
@@ -169,10 +181,23 @@ jobs:
                             "token": os.environ["REGISTRY_TOKEN"]}))
           PY
       - name: Verify public health
+        if: vars.AQUA_DEPLOY_ENABLED == 'true'
         env:
           EXPECTED_SHA: ${{ needs.build.outputs.sha }}
-          PUBLIC_URL: ${{ github.repository == 'AQUA-Monitoring/aqua_beta' && 'https://beta-aqua.michalski.app' || 'https://aqua.michalski.app' }}
+          PUBLIC_URL: ${{ vars.AQUA_PUBLIC_URL }}
         run: |
+          [[ "$PUBLIC_URL" == https://* ]]
           curl --fail --silent --show-error --retry 3 --max-time 20 "$PUBLIC_URL/health"
           curl --fail --silent --show-error --max-time 20 "$PUBLIC_URL/release.json" | \
             jq -e --arg sha "$EXPECTED_SHA" '.sha == $sha'
+          index=$(curl --fail --silent --show-error --max-time 20 "$PUBLIC_URL/")
+          axios_assets=$(printf '%s' "$index" | grep -oE '/assets/axios-[A-Za-z0-9_-]+\.js' | sort -u)
+          test -n "$axios_assets"
+          found=false
+          while IFS= read -r asset; do
+            bundle=$(curl --fail --silent --show-error --max-time 20 "$PUBLIC_URL$asset")
+            if [[ "$bundle" == *'https://api-aqua.michalski.app/api/'* ]]; then
+              found=true
+            fi
+          done <<< "$axios_assets"
+          test "$found" = true

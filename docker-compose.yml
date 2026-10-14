@@ -12,7 +12,7 @@ services:
       - frontend_node_modules:/app/node_modules
 
   frontend:
-    image: ${AQUA_FRONTEND_IMAGE:-aqua_beta-frontend}
+    image: ${AQUA_FRONTEND_IMAGE:-aqua-frontend}
     build:
       context: .
       target: production

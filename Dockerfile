@@ -39,7 +39,7 @@ ENV VITE_BASE_URL=${VITE_BASE_URL} \
     VITE_MAPBOX_API_KEY=${VITE_MAPBOX_API_KEY}
 
 COPY . .
-RUN npm run build
+RUN npm run build && npm run verify:production-build
 
 FROM nginx:1.27-alpine AS production
 
