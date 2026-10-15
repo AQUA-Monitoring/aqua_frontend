@@ -228,7 +228,7 @@ export function useHlsStream(cfg: {
       })
       listen(v, 'error', () => {
         const err = v.error
-        retry(`Erro no vídeo nativo (code=${err?.code ?? 'n/a'})`)
+        retry('A reprodução da câmera foi interrompida')
         if (isDev) console.error('[HlsStream] Native video error', err)
       })
       return
@@ -294,18 +294,18 @@ export function useHlsStream(cfg: {
         if (!data?.fatal) return
         switch (data.type) {
           case Hls.ErrorTypes.NETWORK_ERROR:
-            retry(`HLS (rede): ${data.details ?? 'erro de rede'}`)
+            retry('Não foi possível conectar à transmissão da câmera')
             break
           case Hls.ErrorTypes.MEDIA_ERROR:
             {
               const recovery = nextMediaRecoveryAttempt(mediaRecoveryAttempt)
               mediaRecoveryAttempt = recovery.attempt
               if (recovery.canRecover) {
-              errorMessage.value = `HLS (mídia): tentando recuperar (${mediaRecoveryAttempt}/4).`
+              errorMessage.value = `A imagem foi interrompida. Tentando recuperar a transmissão (${mediaRecoveryAttempt}/4).`
               h.recoverMediaError()
               } else {
                 destroy()
-                errorMessage.value = 'HLS (mídia): transmissão indisponível após 4 tentativas.'
+                errorMessage.value = 'A transmissão está temporariamente indisponível. Tente novamente em instantes.'
               }
             }
             break
@@ -334,7 +334,7 @@ export function useHlsStream(cfg: {
       return
     }
 
-    errorMessage.value = 'HLS não suportado neste navegador'
+    errorMessage.value = 'Este navegador não consegue reproduzir esta transmissão. Tente usar um navegador atualizado.'
   }
 
   function init() {

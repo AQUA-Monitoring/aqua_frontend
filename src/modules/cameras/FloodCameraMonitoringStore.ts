@@ -106,6 +106,7 @@ export const useFloodCameraMonitoringStore = defineStore('flood_monitoring', () 
   }
 
   async function getById(id: string, force = false): Promise<CameraApiItem | null> {
+    error.value = null
     const loaded = camerasRaw.value.find((camera) => camera.id === id) ?? null
     const detailAge = Date.now() - (detailCompletedAt.get(id) ?? 0)
     if (!force && loaded && detailAge < 60_000) return loaded
@@ -120,7 +121,10 @@ export const useFloodCameraMonitoringStore = defineStore('flood_monitoring', () 
       else camerasRaw.value.push(camera)
       detailCompletedAt.set(id, Date.now())
       return camera
-    } catch {
+    } catch (caught) {
+      if (!controller.signal.aborted) {
+        error.value = parseApiError(caught).message
+      }
       return loaded
     } finally {
       if (detailControllers.get(id) === controller) detailControllers.delete(id)

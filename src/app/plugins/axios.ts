@@ -6,6 +6,7 @@ interface RetryableRequestConfig extends InternalAxiosRequestConfig {
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL || '/api/',
+  timeout: 20_000,
 })
 
 let refreshPromise: Promise<void> | null = null
