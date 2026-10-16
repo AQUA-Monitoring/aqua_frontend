@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
+import { isAxiosError } from 'axios'
 import { ref } from 'vue'
 import router from '@/app/router'
 import { toast, type ToastOptions } from 'vue3-toastify'
 import AuthApi from '../services/Auth'
 import { useLoadingStore } from '@/stores/loading'
-import type { IToken, IUser, LoginRequest, SignupRequest, UpdateMeRequest } from '../types/auth'
+import type { IToken, IUser, GoogleLoginRequest, LoginRequest, SignupRequest, UpdateMeRequest } from '../types/auth'
 import { parseApiError } from '@/shared'
 
 const authServiceClient = new AuthApi()
@@ -48,6 +49,31 @@ export const useAuthStore = defineStore('auth', () => {
       const parsed = parseApiError(error, 'Nao foi possivel iniciar a sessao.')
       console.error('Erro detalhado:', parsed)
       throw parsed
+    } finally {
+      loadingStore.stop()
+    }
+  }
+
+  async function loginWithGoogle(payload: GoogleLoginRequest) {
+    loadingStore.start()
+    try {
+      const response = await authServiceClient.loginWithGoogle(payload)
+      persistTokens(response.tokens)
+      user.value = response.user
+      isAuthenticated.value = true
+      toast.success('Sessão iniciada com sucesso!')
+    } catch (error: unknown) {
+      const code: unknown = isAxiosError(error) ? error.response?.data?.code : undefined
+      const messages: Record<string, string> = {
+        account_link_required: 'Este email já tem uma conta. Entre com email e senha.',
+        account_inactive: 'Esta conta está desativada. Entre em contato com a administração.',
+        invalid_google_credential: 'Não foi possível confirmar o acesso com Google. Tente novamente.',
+        google_challenge_used: 'Esta tentativa já foi utilizada. Tente entrar novamente.',
+        account_conflict: 'Sua conta foi atualizada. Tente entrar novamente.',
+        google_unavailable: 'O acesso com Google está temporariamente indisponível. Tente novamente.',
+      }
+      const parsed = parseApiError(error, 'Não foi possível entrar com Google. Tente novamente.')
+      throw new Error(typeof code === 'string' && messages[code] ? messages[code] : parsed.message)
     } finally {
       loadingStore.stop()
     }
@@ -144,6 +170,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthenticated,
     loginUser,
     signupUser,
+    loginWithGoogle,
     getMe,
     updateMe,
     refreshToken,

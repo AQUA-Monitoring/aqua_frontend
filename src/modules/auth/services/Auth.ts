@@ -1,5 +1,8 @@
 import api from '@/app/plugins/axios'
 import type {
+  GoogleAuthConfig,
+  GoogleLoginRequest,
+  GoogleLoginResponse,
   IUser,
   IToken,
   LoginRequest,
@@ -12,6 +15,16 @@ import type {
 } from '../types/auth'
 
 export default class AuthApi {
+  async getGoogleConfig(): Promise<GoogleAuthConfig> {
+    const { data } = await api.get<GoogleAuthConfig>('/auth/google/config/')
+    return data
+  }
+
+  async loginWithGoogle(payload: GoogleLoginRequest): Promise<GoogleLoginResponse> {
+    const { data } = await api.post<GoogleLoginResponse>('/auth/google/', payload)
+    return data
+  }
+
   async loginUser(payload: LoginRequest): Promise<IToken> {
     const { data } = await api.post<IToken>('/auth/token/', payload)
     return data

@@ -49,3 +49,20 @@ export interface UpdateMeRequest {
 }
 
 export type UpdateMeResponse = IUser
+
+export type GoogleAuthConfig = { enabled: false } | {
+  enabled: true
+  client_id: string
+  nonce: string
+  challenge: string
+}
+
+export interface GoogleLoginRequest {
+  credential: string
+  challenge: string
+}
+
+export interface GoogleLoginResponse {
+  user: IUser
+  tokens: IToken
+}
