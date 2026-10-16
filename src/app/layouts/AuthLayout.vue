@@ -6,7 +6,7 @@ const navigationAuth = useNavigationAuth()
 </script>
 
 <template>
-  <div class="relative min-h-dvh overflow-hidden">
+  <div class="relative isolate min-h-dvh overflow-hidden">
     <HeaderComp :title="String($route.name)" v-bind="navigationAuth" />
     <main class="min-h-[64vh] grid lg:px-20 pt-20 pb-30 lg:py-0">
       <RouterView />
