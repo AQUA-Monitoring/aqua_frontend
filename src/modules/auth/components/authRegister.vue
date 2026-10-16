@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { BaseForm } from '@/shared'
-// import { GoogleAuthButton } from '../components'
+import GoogleAuthButton from './GoogleAuthButton.vue'
 import type { FormValues, IFormField } from '@/shared'
 
 const emit = defineEmits(['submit', 'toggle'])
@@ -42,8 +42,7 @@ const onToggle = () => {
         @submit="onRegister"
       />
 
-      <!-- <p class="my-3 text-center font-semibold">ou</p> -->
-      <!-- <GoogleAuthButton /> -->
+      <GoogleAuthButton mode="register" />
       <button @click="onToggle" class="mb-3 mt-10 text-center text-xs lg:hidden cursor-pointer">
         Você já tem conta? <span class="underline">Faça o login</span>
       </button>

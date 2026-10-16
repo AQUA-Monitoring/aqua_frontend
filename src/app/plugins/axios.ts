@@ -20,7 +20,7 @@ function setAuthorization(request: InternalAxiosRequestConfig, token: string | n
 }
 
 function isTokenEndpoint(url = '') {
-  return url.includes('/auth/token/')
+  return url.includes('/auth/token/') || url.includes('/auth/google/')
 }
 
 api.interceptors.request.use(
