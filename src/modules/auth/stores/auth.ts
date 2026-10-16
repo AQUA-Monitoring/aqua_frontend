@@ -110,18 +110,19 @@ export const useAuthStore = defineStore('auth', () => {
         }
         localStorage.setItem('access_token', response.access)
       } catch (error) {
-        clearTokens()
-        logout({ silent: true })
-        const parsed = parseApiError(error, 'Sessao expirada. Faca login novamente.')
-        throw parsed
+        const parsed = parseApiError(error)
+        if (parsed.status === 401 || parsed.status === 403) {
+          await logout({ silent: true, reason: 'session-expired' })
+        }
+        throw error
       }
     } else {
-      logout({ silent: true })
+      await logout({ silent: true, reason: 'session-expired' })
       throw parseApiError(null, 'Sessao expirada. Faca login novamente.')
     }
   }
 
-  async function logout({ silent = false }: { silent?: boolean } = {}) {
+  async function logout({ silent = false, reason }: { silent?: boolean; reason?: 'session-expired' } = {}) {
     clearTokens()
     isAuthenticated.value = false
     user.value = null
@@ -134,7 +135,7 @@ export const useAuthStore = defineStore('auth', () => {
       } as ToastOptions)
     }
 
-    router.push({ name: 'auth', query: { mode: 'login' } })
+    await router.push({ name: 'auth', query: { mode: 'login', ...(reason ? { reason } : {}) } })
   }
 
   return {

@@ -122,6 +122,13 @@ async function handleRegister(values: FormValues) {
 </script>
 
 <template>
+  <p
+    v-if="route.query.reason === 'session-expired'"
+    role="alert"
+    class="mx-auto my-4 max-w-xl rounded-xl bg-amber-50 p-4 text-center text-amber-900"
+  >
+    Sua sessão expirou. Entre novamente para continuar.
+  </p>
   <div
     v-if="isDesktop"
     class="fixed -z-10 h-screen inset-0 w-screen bg-contain bg-center bg-no-repeat transition-transform duration-1000 hidden lg:block"
