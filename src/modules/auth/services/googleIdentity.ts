@@ -11,7 +11,9 @@ export interface GoogleIdentity {
   }): void
   renderButton(element: HTMLElement, config: {
     type: 'standard'
-    theme: 'outline'
+    theme: 'outline' | 'filled_black'
+    shape: 'pill'
+    logo_alignment: 'left'
     size: 'large'
     text: 'signin_with' | 'signup_with'
     width: number
