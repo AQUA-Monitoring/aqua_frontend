@@ -73,7 +73,16 @@ export const useAuthStore = defineStore('auth', () => {
         google_unavailable: 'O acesso com Google está temporariamente indisponível. Tente novamente.',
       }
       const parsed = parseApiError(error, 'Não foi possível entrar com Google. Tente novamente.')
-      throw new Error(typeof code === 'string' && messages[code] ? messages[code] : parsed.message)
+      // Production may normalize API errors; preserve Google-specific guidance by status.
+      const status = isAxiosError(error) ? error.response?.status : undefined
+      const statusMessages: Record<number, string> = {
+        401: messages.invalid_google_credential!,
+        403: messages.account_inactive!,
+        409: messages.account_link_required!,
+        503: messages.google_unavailable!,
+      }
+      const fallback = status ? statusMessages[status] ?? parsed.message : parsed.message
+      throw new Error(typeof code === 'string' && messages[code] ? messages[code] : fallback)
     } finally {
       loadingStore.stop()
     }
