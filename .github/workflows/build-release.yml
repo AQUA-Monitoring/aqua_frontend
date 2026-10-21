@@ -1,0 +1,178 @@
+name: Aqua frontend release
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+    inputs:
+      release_ref:
+        description: Full SHA on dev to publish (required for official; beta uses dev HEAD)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aqua-release-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository == 'AQUA-Monitoring/aqua_beta' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      sha: ${{ steps.release.outputs.sha }}
+      digest: ${{ steps.image.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Resolve approved source
+        id: release
+        env:
+          REQUESTED_SHA: ${{ inputs.release_ref }}
+          EVENT_SHA: ${{ github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$REPOSITORY" == AQUA-Monitoring/aqua_beta ]]; then
+            sha=$(git rev-parse origin/dev)
+            image=ghcr.io/aqua-monitoring/aqua-beta
+            if [[ "$EVENT_NAME" == push && "$EVENT_SHA" != "$sha" ]]; then
+              echo 'This beta build has been superseded.' >&2
+              exit 1
+            fi
+            if [[ -n "$REQUESTED_SHA" && "$REQUESTED_SHA" != "$sha" ]]; then
+              echo 'Beta deploys only the current dev HEAD.' >&2
+              exit 1
+            fi
+          else
+            sha="$REQUESTED_SHA"
+            image=ghcr.io/aqua-monitoring/aqua-frontend
+          fi
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]]
+          git merge-base --is-ancestor "$sha" origin/dev
+          git checkout --detach "$sha"
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "image=$image" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Validate frontend
+        run: npm ci --no-audit --no-fund && npm run quality
+      - name: Check public build configuration
+        env:
+          API_URL: ${{ vars.VITE_BASE_URL }}
+          MAPBOX_KEY: ${{ secrets.VITE_MAPBOX_API_KEY }}
+        run: |
+          test "$API_URL" = 'https://api-aqua.michalski.app/api/'
+          test -n "$MAPBOX_KEY"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build immutable image
+        id: image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: production
+          push: true
+          tags: ${{ steps.release.outputs.image }}:${{ steps.release.outputs.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ steps.release.outputs.sha }}
+          build-args: |
+            VCS_REF=${{ steps.release.outputs.sha }}
+            VITE_BASE_URL=${{ vars.VITE_BASE_URL }}
+            VITE_HLS_TARGET=${{ vars.VITE_HLS_TARGET }}
+            VITE_PROXY_TARGET=${{ vars.VITE_PROXY_TARGET }}
+            VITE_MAPBOX_API_KEY=${{ secrets.VITE_MAPBOX_API_KEY }}
+            VITE_PUBLIC_VAPID_KEY=${{ vars.VITE_PUBLIC_VAPID_KEY }}
+            VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}
+            VITE_FIREBASE_AUTH_DOMAIN=${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+            VITE_FIREBASE_PROJECT_ID=${{ vars.VITE_FIREBASE_PROJECT_ID }}
+            VITE_FIREBASE_STORAGE_BUCKET=${{ vars.VITE_FIREBASE_STORAGE_BUCKET }}
+            VITE_FIREBASE_MESSAGING_SENDER_ID=${{ vars.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+            VITE_FIREBASE_APP_ID=${{ vars.VITE_FIREBASE_APP_ID }}
+            VITE_FIREBASE_MEASUREMENT_ID=${{ vars.VITE_FIREBASE_MEASUREMENT_ID }}
+          cache-from: type=gha,scope=${{ github.event.repository.name }}
+          cache-to: type=gha,mode=max,scope=${{ github.event.repository.name }}
+          provenance: mode=max
+          sbom: true
+      - name: Record release
+        env:
+          SHA: ${{ steps.release.outputs.sha }}
+          IMAGE: ${{ steps.release.outputs.image }}
+          DIGEST: ${{ steps.image.outputs.digest }}
+        run: |
+          jq -n --arg sha "$SHA" --arg image "$IMAGE@$DIGEST" --arg run "$GITHUB_RUN_ID" \
+            '{sha: $sha, image: $image, run_id: $run}' > release.json
+          cat release.json >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release
+          path: release.json
+          retention-days: 30
+
+  deploy:
+    needs: build
+    if: vars.AQUA_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+      packages: read
+    steps:
+      - name: Deploy through restricted SSH command
+        env:
+          DEPLOY_HOST: ${{ vars.AQUA_DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ vars.AQUA_DEPLOY_PORT || '22' }}
+          DEPLOY_USER: ${{ github.repository == 'AQUA-Monitoring/aqua_beta' && 'aqua-deploy-beta' || 'aqua-deploy-frontend' }}
+          SSH_KEY: ${{ secrets.AQUA_DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.AQUA_DEPLOY_KNOWN_HOSTS }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ needs.build.outputs.sha }}
+          DIGEST: ${{ needs.build.outputs.digest }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$DEPLOY_HOST" =~ ^[a-zA-Z0-9][a-zA-Z0-9.-]+$ ]]
+          [[ "$DEPLOY_PORT" =~ ^[0-9]{1,5}$ ]]
+          test -n "$SSH_KEY"
+          test -n "$KNOWN_HOSTS"
+          umask 077
+          work=$(mktemp -d)
+          trap 'rm -rf -- "$work"' EXIT
+          printf '%s\n' "$SSH_KEY" > "$work/key"
+          printf '%s\n' "$KNOWN_HOSTS" > "$work/known_hosts"
+          python3 - <<'PY' | ssh -T -i "$work/key" -p "$DEPLOY_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$work/known_hosts" -o ConnectTimeout=15 \
+            "$DEPLOY_USER@$DEPLOY_HOST" deploy
+          import json, os
+          print(json.dumps({"sha": os.environ["SHA"], "digest": os.environ["DIGEST"],
+                            "run_id": os.environ["GITHUB_RUN_ID"], "username": os.environ["GITHUB_ACTOR"],
+                            "token": os.environ["REGISTRY_TOKEN"]}))
+          PY
+      - name: Verify public health
+        env:
+          EXPECTED_SHA: ${{ needs.build.outputs.sha }}
+          PUBLIC_URL: ${{ github.repository == 'AQUA-Monitoring/aqua_beta' && 'https://beta-aqua.michalski.app' || 'https://aqua.michalski.app' }}
+        run: |
+          curl --fail --silent --show-error --retry 3 --max-time 20 "$PUBLIC_URL/health"
+          curl --fail --silent --show-error --max-time 20 "$PUBLIC_URL/release.json" | \
+            jq -e --arg sha "$EXPECTED_SHA" '.sha == $sha'
