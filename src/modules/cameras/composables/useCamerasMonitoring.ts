@@ -71,6 +71,7 @@ export function useCamerasMonitoring(
     refresh: store.refreshLoadedPages,
     getById: store.getById,
     update: store.update,
+    remove: store.remove,
     getNeighborhoods: store.getNeighborhoods,
     statusCounters,
   }

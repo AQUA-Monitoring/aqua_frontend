@@ -18,7 +18,11 @@ interface RegionsNeighborhoodsResponse {
   regions?: Array<{
     id: string
     name: string
-    neighborhoods?: Array<{ id: string; name: string; city_id?: string | null }>
+    neighborhoods?: Array<{
+      id: string
+      name: string
+      city_id?: string | null
+    }>
   }>
   neighborhoods?: NeighborhoodDto[]
 }
@@ -94,6 +98,12 @@ export default class FloodCameraMonitoringApi {
     return data
   }
 
+  async deleteCamera(id: string, password: string): Promise<void> {
+    await api.delete(`/flood_monitoring/cameras/${id}/`, {
+      data: { password },
+    })
+  }
+
   async getCities(): Promise<CityDto[]> {
     const { data } = await api.get<CityDto[] | Paginated<CityDto>>('/addressing/cities/')
     return unwrapList(data)
@@ -109,7 +119,10 @@ export default class FloodCameraMonitoringApi {
         ...neighborhood,
         name: formatTerritoryLabel(neighborhood.name),
         region: neighborhood.region
-          ? { ...neighborhood.region, name: formatTerritoryLabel(neighborhood.region.name) }
+          ? {
+              ...neighborhood.region,
+              name: formatTerritoryLabel(neighborhood.region.name),
+            }
           : neighborhood.region,
       }))
     }
@@ -134,7 +147,10 @@ export default class FloodCameraMonitoringApi {
     return {
       ...data,
       neighborhood: data.neighborhood
-        ? { ...data.neighborhood, name: formatTerritoryLabel(data.neighborhood.name) }
+        ? {
+            ...data.neighborhood,
+            name: formatTerritoryLabel(data.neighborhood.name),
+          }
         : null,
       region: data.region ? { ...data.region, name: formatTerritoryLabel(data.region.name) } : null,
       nearest_address: data.nearest_address

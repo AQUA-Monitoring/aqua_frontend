@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import api from '@/app/plugins/axios'
+import GuidedImageReview from './GuidedImageReview.vue'
 
 type Label = { id: string; classification: string; reason: string; created_at: string }
 type Evidence = {
@@ -134,8 +135,15 @@ const selectedVersion = ref('')
 const action = ref('PILOT')
 const pilotCamera = ref('')
 const deploymentReason = ref('')
-const decisions = ref<Record<string, string>>({})
-const reasons = ref<Record<string, string>>({})
+const imageIndices = ref<Record<string, number>>({})
+function currentImages(episode: Episode) {
+  const index = imageIndices.value[episode.id] ?? 0
+  return episode.images.slice(index, index + 1)
+}
+function advanceImage(episode: Episode) {
+  imageIndices.value[episode.id] =
+    ((imageIndices.value[episode.id] ?? 0) + 1) % episode.images.length
+}
 const events = ref<Record<string, string>>({})
 const previews = ref<Record<string, string>>({})
 const history = ref<
@@ -206,11 +214,13 @@ function message(err: unknown) {
     : detail || 'Não foi possível concluir a operação. Tente novamente.'
 }
 function filterEpisodes() {
+  if (busy.value) return
   focusedEpisode.value = ''
   page.value = 1
   load()
 }
 function changePage(offset: number) {
+  if (busy.value) return
   page.value += offset
   load()
 }
@@ -248,9 +258,9 @@ async function load() {
       revoke()
       for (const episode of data.results) {
         events.value[episode.id] = episode.event_id
+        const pending = episode.images.findIndex((item) => !item.label)
+        imageIndices.value[episode.id] = pending < 0 ? 0 : pending
         for (const item of episode.images) {
-          decisions.value[item.id] = item.label?.classification || item.classification
-          reasons.value[item.id] = item.label?.reason || ''
           try {
             const result = await api.get(item.url.replace(/^\/api/, ''), { responseType: 'blob' })
             if (id !== generation) return
@@ -296,18 +306,6 @@ async function mutate(path: string, payload: unknown, success: string) {
   } finally {
     busy.value = false
   }
-}
-function saveLabel(item: Evidence) {
-  return mutate(
-    `/selections/${item.id}/labels/`,
-    {
-      request_id: requestId(),
-      previous_id: item.label?.id || null,
-      classification: decisions.value[item.id],
-      reason: reasons.value[item.id],
-    },
-    'Revisão registrada somente para esta imagem.',
-  )
 }
 function deploy() {
   if (!selectedVersion.value) return
@@ -361,6 +359,7 @@ onBeforeUnmount(() => {
       <button
         v-for="(name, index) in tabs"
         :key="name"
+        :disabled="busy"
         :aria-current="tab === index ? 'page' : undefined"
         @click="tab = index"
       >
@@ -373,8 +372,8 @@ onBeforeUnmount(() => {
     <template v-else>
       <div v-if="tab === 0">
         <p class="note">
-          Normalidade abaixo de 70% seleciona casos para revisão. Esse índice, sozinho, não confirma
-          alagamento.
+          Observe a imagem e registre sua decisão. A previsão do modelo será mostrada após salvar.
+          Cada imagem precisa de uma revisão própria.
         </p>
         <form class="filters" @submit.prevent="filterEpisodes">
           <label
@@ -407,7 +406,8 @@ onBeforeUnmount(() => {
             </select></label
           >
           <label>Desde<input v-model="from" type="datetime-local" /></label
-          ><label>Até<input v-model="to" type="datetime-local" /></label><button>Filtrar</button>
+          ><label>Até<input v-model="to" type="datetime-local" /></label
+          ><button :disabled="busy">Filtrar</button>
         </form>
         <div v-if="!episodes.results.length" class="empty">
           <h2>Nenhum episódio nesta fila</h2>
@@ -419,73 +419,55 @@ onBeforeUnmount(() => {
         <article v-for="episode in episodes.results" :key="episode.id" class="card">
           <header>
             <div>
-              <span class="badge">{{ reasonLabels[episode.reason] || episode.reason }}</span>
               <h2>{{ episode.camera_name }}</h2>
               <p>{{ date(episode.started_at) }} → {{ date(episode.last_at) }}</p>
             </div>
             <span>{{ Math.floor(episode.observed_seconds / 60) }} min observados</span>
           </header>
-          <p>
-            Normalidade: mínima {{ percent(episode.minimum_normal / 100) }} · atual
-            {{ percent(episode.latest_normal / 100) }} · modelo
-            <code>{{ episode.model_version.slice(0, 12) }}</code>
+          <p role="status">
+            {{ episode.images.filter((item) => item.label).length }} de
+            {{ episode.images.length }} imagens revisadas neste episódio.
+            {{
+              !episode.images.length
+                ? 'Sem imagens para revisão.'
+                : episode.images.some((item) => !item.label)
+                  ? 'Há imagens pendentes.'
+                  : 'Revisão do episódio concluída.'
+            }}
           </p>
-          <div class="evidence-grid">
-            <form
-              v-for="item in episode.images"
-              :key="item.id"
-              class="evidence"
-              @submit.prevent="saveLabel(item)"
+          <template v-for="item in currentImages(episode)" :key="item.id">
+            <p>Imagem {{ (imageIndices[episode.id] ?? 0) + 1 }} de {{ episode.images.length }}</p>
+            <GuidedImageReview
+              :item="item"
+              :preview="previews[item.id]"
+              :camera-name="episode.camera_name"
+              :busy="busy"
+              @saving="busy = $event"
+              @saved="item.label = $event"
+            />
+            <button
+              v-if="item.label && episode.images.length > 1"
+              :disabled="busy"
+              @click="advanceImage(episode)"
             >
-              <img
-                v-if="previews[item.id]"
-                :src="previews[item.id]"
-                :alt="`Evidência de ${episode.camera_name}, ${date(item.captured_at)}`"
-              />
-              <p v-else>Imagem indisponível. Atualize a página.</p>
-              <p>
-                {{ date(item.captured_at) }} · previsão:
-                <strong>{{ labels[item.classification] }}</strong>
-              </p>
-              <p>
-                Normal
-                {{ percent(item.prediction.normal == null ? null : item.prediction.normal / 100) }}
-                · alagamento
-                {{
-                  percent(item.prediction.flooded == null ? null : item.prediction.flooded / 100)
-                }}
-              </p>
-              <p v-if="item.label" class="success">
-                Revisada em {{ date(item.label.created_at) }}. Uma alteração preservará a decisão
-                anterior.
-              </p>
-              <label
-                >Classificação desta imagem<select v-model="decisions[item.id]">
-                  <option v-for="(text, value) in labels" :key="value" :value="value">
-                    {{ text }}
-                  </option>
-                </select></label
-              >
-              <label
-                >Justificativa<textarea
-                  v-model="reasons[item.id]"
-                  required
-                  maxlength="2000"
-                  rows="2"
-                  placeholder="Descreva o que é visível na imagem"
-                />
-              </label>
-              <button :disabled="busy || !previews[item.id]">
-                {{
-                  item.label
-                    ? 'Registrar correção'
-                    : decisions[item.id] === item.classification
-                      ? 'Confirmar classificação'
-                      : 'Registrar revisão'
-                }}
-              </button>
-            </form>
-          </div>
+              {{
+                (imageIndices[episode.id] ?? 0) + 1 < episode.images.length
+                  ? 'Avançar para próxima imagem'
+                  : 'Voltar à primeira imagem'
+              }}
+            </button>
+          </template>
+          <p v-if="!episode.images.length">Nenhuma imagem disponível neste episódio.</p>
+          <details>
+            <summary>Por que este episódio entrou na fila?</summary>
+            <p>
+              {{ reasonLabels[episode.reason] || episode.reason }}. A seleção para revisão não
+              confirma alagamento.
+            </p>
+            <p>
+              Versão do modelo: <code>{{ episode.model_version }}</code>
+            </p>
+          </details>
           <details>
             <summary>Histórico e grupo do evento</summary>
             <p>
@@ -505,8 +487,16 @@ onBeforeUnmount(() => {
               <label>Identificador do evento<input v-model="events[episode.id]" required /></label
               ><button :disabled="busy">Vincular evento</button>
             </form>
-            <button @click="loadHistory(episode.id)">Consultar histórico</button>
-            <div v-if="history[episode.id]" class="table-wrap">
+            <button
+              v-if="episode.images.length && episode.images.every((item) => item.label)"
+              @click="loadHistory(episode.id)"
+            >
+              Consultar histórico
+            </button>
+            <div
+              v-if="history[episode.id] && episode.images.every((item) => item.label)"
+              class="table-wrap"
+            >
               <table>
                 <thead>
                   <tr>
@@ -1144,23 +1134,6 @@ textarea {
 }
 textarea {
   resize: vertical;
-}
-.evidence-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
-  gap: 1.25rem;
-}
-.evidence {
-  display: grid;
-  gap: 0.6rem;
-  align-content: start;
-}
-.evidence img {
-  width: 100%;
-  aspect-ratio: 16/9;
-  object-fit: contain;
-  border-radius: 0.65rem;
-  background: #101e2b;
 }
 .badge {
   display: inline-block;

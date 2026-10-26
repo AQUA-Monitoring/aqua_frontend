@@ -22,6 +22,21 @@ export default class FloodPointsApi {
     }
   }
 
+  async updateFloodPoint(
+    id: string | number,
+    payload: { password: string; notify: boolean; finished_at: string },
+  ): Promise<FloodPointApiItem> {
+    const { data } = await api.patch<FloodPointApiItem>(`/floods_point/registering/${id}/`, payload)
+    return data
+  }
+
+  async endFloodPoint(
+    id: string | number,
+    payload: { password: string; notify: boolean },
+  ): Promise<void> {
+    await api.delete(`/floods_point/registering/${id}/`, { data: payload })
+  }
+
   async createFloodPoint(payload: CreateFloodPointPayload): Promise<FloodPointApiItem> {
     // Build the supported body explicitly so queued drafts created by older versions
     // cannot reintroduce custom idempotency fields or headers that trigger CORS.

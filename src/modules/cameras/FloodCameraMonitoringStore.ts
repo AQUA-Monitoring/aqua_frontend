@@ -165,7 +165,10 @@ export const useFloodCameraMonitoringStore = defineStore('flood_monitoring', () 
       lastCompletedAt.value = Date.now()
     } catch (caught) {
       if (sequence === requestSequence) {
-        error.value = parseApiError(caught, 'Não foi possível atualizar os dados das câmeras.').message
+        error.value = parseApiError(
+          caught,
+          'Não foi possível atualizar os dados das câmeras.',
+        ).message
       }
     } finally {
       if (sequence === requestSequence) refreshing.value = false
@@ -178,6 +181,21 @@ export const useFloodCameraMonitoringStore = defineStore('flood_monitoring', () 
     if (index >= 0) camerasRaw.value[index] = camera
     else camerasRaw.value.push(camera)
     return camera
+  }
+
+  async function remove(id: string, password: string): Promise<void> {
+    await camerasApi.deleteCamera(id, password)
+    ++requestSequence
+    listController?.abort()
+    detailControllers.get(id)?.abort()
+    detailControllers.delete(id)
+    detailCompletedAt.delete(id)
+    camerasRaw.value = camerasRaw.value.filter((camera) => camera.id !== id)
+    count.value = Math.max(0, count.value - 1)
+    lastCompletedAt.value = null
+    loading.value = false
+    loadingMore.value = false
+    refreshing.value = false
   }
 
   async function getNeighborhoods(): Promise<NeighborhoodDto[]> {
@@ -204,6 +222,7 @@ export const useFloodCameraMonitoringStore = defineStore('flood_monitoring', () 
     getById,
     refreshLoadedPages,
     update,
+    remove,
     getNeighborhoods,
     setShowCameras,
   }

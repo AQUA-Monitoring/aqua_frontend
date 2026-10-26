@@ -6,7 +6,7 @@ const props = defineProps<{ cameraId: string }>()
 interface Run {
   id: string; started_at: string; level: string; model_version: string; error_code: string
   frames: Array<{ normal: number; medium: number; flooded: number }>
-  evidence: Array<{ id: string; url: string; sha256: string }>
+  evidence: Array<{ id: string; url: string; sha256: string; preserved: boolean; expires_at: string }>
 }
 interface Monitoring {
   interval_seconds: number
@@ -37,6 +37,9 @@ const trendLabel = computed(() => monitoring.value?.trend.status === 'RISING'
     ? 'Sem crescimento sustentado nas últimas análises'
     : 'Aguardando análises válidas para avaliar a tendência')
 const runs = ref<Run[]>([])
+const savedOnly = ref(false)
+const page = ref(1)
+const total = ref(0)
 const level = ref('WATCH')
 const currentLevel = ref('NORMAL')
 const levelLabels: Record<string, string> = {
@@ -54,9 +57,10 @@ async function load() {
   const id = ++requestId
   error.value = ''
   try {
-    const { data } = await api.get(`/flood_monitoring/cameras/${props.cameraId}/monitoring/`)
+    const { data } = await api.get(`/flood_monitoring/cameras/${props.cameraId}/monitoring/`, { params: { saved: savedOnly.value, page: page.value } })
     if (id !== requestId) return
     runs.value = data.runs
+    total.value = data.count
     currentLevel.value = data.monitoring?.level ?? 'NORMAL'
     monitoring.value = data.monitoring?.interval_seconds ? data.monitoring : null
     capacity.value = data.capacity ?? null
@@ -87,6 +91,16 @@ async function review() {
   } catch { error.value = 'Não foi possível registrar a revisão.' }
   finally { busy.value = false }
 }
+async function preserveEvidence(item: Run['evidence'][number]) {
+  const keep = !item.preserved
+  if (!keep && !window.confirm('Ao deixar de guardar, imagens com mais de 15 dias serão apagadas na próxima limpeza. Continuar?')) return
+  busy.value = true
+  try {
+    const { data } = await api.patch(`/flood_monitoring/evidence/${item.id}/`, { preserved: keep })
+    item.preserved = data.preserved
+  } catch { error.value = 'Não foi possível alterar a preservação da imagem.' }
+  finally { busy.value = false }
+}
 async function showEvidence(url: string) {
   const id = requestId
   try {
@@ -97,7 +111,7 @@ async function showEvidence(url: string) {
   } catch { error.value = 'Imagem indisponível ou link expirado. Atualize o histórico.' }
 }
 watch(() => props.cameraId, () => {
-  runs.value = []; selectedRun.value = ''
+  runs.value = []; selectedRun.value = ''; page.value = 1
   monitoring.value = null; capacity.value = null
   if (preview.value) URL.revokeObjectURL(preview.value)
   preview.value = ''
@@ -133,14 +147,24 @@ onBeforeUnmount(() => { ++requestId; if (preview.value) URL.revokeObjectURL(prev
       <button :disabled="busy || !reason.trim()" class="rounded bg-blue-700 p-2 text-white disabled:opacity-50" @click="changeIntensity">Aplicar por 1 hora</button>
       <button class="rounded border p-2" @click="load">Atualizar histórico</button>
     </div>
+    <p class="text-sm">Imagens são apagadas após 15 dias. Use “Guardar” para preservar as selecionadas sem prazo de exclusão.</p>
     <p v-if="!runs.length" class="text-sm">Nenhuma sequência registrada pelo monitoramento adaptativo.</p>
+    <label class="flex gap-2 text-sm"><input v-model="savedOnly" type="checkbox" @change="page = 1; load()" />Mostrar somente sequências com imagens guardadas</label>
+    <div class="flex items-center gap-2 text-sm">
+      <button :disabled="page <= 1" class="rounded border p-2 disabled:opacity-50" @click="page--; load()">Anteriores</button>
+      <span>Página {{ page }} · {{ total }} sequências</span>
+      <button :disabled="page * 50 >= total" class="rounded border p-2 disabled:opacity-50" @click="page++; load()">Próximas</button>
+    </div>
     <ol class="aqua-scrollbar max-h-96 space-y-3 overflow-y-auto pr-1">
       <li v-for="run in runs" :key="run.id" class="rounded border border-slate-200 p-3 dark:border-slate-700">
         <p>{{ new Date(run.started_at).toLocaleString('pt-BR') }} · {{ run.level }}</p>
         <p class="text-xs">Modelo {{ run.model_version || 'indisponível' }} · {{ run.frames.length }} frames</p>
         <p v-if="run.error_code" class="text-sm text-amber-700">Falha: {{ run.error_code }}</p>
         <div class="mt-2 flex flex-wrap gap-2">
-          <button v-for="(item, index) in run.evidence" :key="item.id" class="rounded border p-2 text-sm" @click="showEvidence(item.url)">Imagem {{ index + 1 }}</button>
+          <div v-for="(item, index) in run.evidence" :key="item.id" class="flex items-center gap-1 rounded border p-1">
+            <button class="rounded p-2 text-sm" @click="showEvidence(item.url)">Imagem {{ index + 1 }}</button>
+            <button :disabled="busy" :aria-pressed="item.preserved" :aria-label="`${item.preserved ? 'Deixar de guardar' : 'Guardar'} imagem ${index + 1}`" class="rounded border p-2 text-sm disabled:opacity-50" @click="preserveEvidence(item)">{{ item.preserved ? 'Guardada · desfazer' : 'Guardar' }}</button>
+          </div>
           <button class="rounded border p-2 text-sm" @click="selectedRun = run.id">Corrigir classificação</button>
         </div>
       </li>

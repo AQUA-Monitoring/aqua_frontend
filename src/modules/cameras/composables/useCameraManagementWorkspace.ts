@@ -129,10 +129,7 @@ export function useCameraManagementWorkspace(
     filters.region_id = queryText(route.query.region_id)
     filters.neighborhood_id = queryText(route.query.neighborhood_id)
     if (normalizeTerritoryFilters) {
-      const normalized = await normalizeTerritoryFilters(
-        filters.region_id,
-        filters.neighborhood_id,
-      )
+      const normalized = await normalizeTerritoryFilters(filters.region_id, filters.neighborhood_id)
       if (routeSequence !== routeSyncSequence) return
       filters.region_id = normalized.regionId
       filters.neighborhood_id = normalized.neighborhoodId
@@ -220,6 +217,21 @@ export function useCameraManagementWorkspace(
     }
   }
 
+  async function remove(password: string) {
+    if (!selected.value || saving.value) return
+    saving.value = true
+    try {
+      await monitoring.remove(selected.value.id, password)
+      ++selectionSequence
+      selected.value = null
+      dirty.value = false
+      await router.replace({ query: buildQuery({ camera: undefined }) })
+      await monitoring.load(appliedFilters.value)
+    } finally {
+      saving.value = false
+    }
+  }
+
   function setDirty(value: boolean) {
     dirty.value = value
   }
@@ -261,6 +273,7 @@ export function useCameraManagementWorkspace(
     closeEditor,
     refresh,
     save,
+    remove,
     setDirty,
     runGuarded,
     confirmDiscard,

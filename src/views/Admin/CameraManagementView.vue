@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import { useTerritoryCatalog } from '@/modules/addressing'
@@ -11,6 +11,26 @@ import {
 import type { CameraUpdatePayload } from '@/modules/cameras'
 import { CatalogFilterPanel, parseApiError } from '@/shared'
 
+import AdminPasswordDialog from '@/shared/components/AdminPasswordDialog.vue'
+import { useAuthStore } from '@/modules/auth'
+const auth = useAuthStore()
+const canDelete = computed(() => auth.user?.type === 'admin' || auth.user?.is_superuser === true)
+const deleteOpen = ref(false)
+const deleteError = ref('')
+function openDelete() {
+  deleteError.value = ''
+  deleteOpen.value = true
+}
+async function deleteCamera(value: { password: string }) {
+  deleteError.value = ''
+  try {
+    await workspace.remove(value.password)
+    deleteOpen.value = false
+    toast.success('Câmera excluída.')
+  } catch (cause) {
+    deleteError.value = parseApiError(cause, 'Não foi possível excluir a câmera.').message
+  }
+}
 const route = useRoute()
 const router = useRouter()
 const territory = useTerritoryCatalog()
@@ -21,9 +41,7 @@ const normalizeTerritoryFilters = async (regionId: string, neighborhoodId: strin
     : { regionId, neighborhoodId }
 }
 const workspace = useCameraManagementWorkspace(route, router, normalizeTerritoryFilters)
-const neighborhoodOptions = computed(() =>
-  territory.neighborhoodsFor(workspace.filters.region_id),
-)
+const neighborhoodOptions = computed(() => territory.neighborhoodsFor(workspace.filters.region_id))
 const activeFilterCount = computed(
   () =>
     [
@@ -40,10 +58,7 @@ watch(
   () => {
     if (
       territory.available.value &&
-      !territory.isValidPair(
-        workspace.filters.region_id,
-        workspace.filters.neighborhood_id,
-      )
+      !territory.isValidPair(workspace.filters.region_id, workspace.filters.neighborhood_id)
     ) {
       workspace.filters.neighborhood_id = ''
     }
@@ -75,10 +90,12 @@ function editLocation() {
   <section class="mx-auto w-full max-w-[1600px] px-4 py-5 dark:text-white sm:px-6 lg:px-0">
     <header class="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p class="text-sm font-semibold tracking-[0.16em] text-[#2768CA] uppercase dark:text-blue-300">Operação</p>
-        <h1 class="mt-1 text-3xl font-bold text-slate-900 dark:text-white">
-          Gerenciar câmeras
-        </h1>
+        <p
+          class="text-sm font-semibold tracking-[0.16em] text-[#2768CA] uppercase dark:text-blue-300"
+        >
+          Operação
+        </p>
+        <h1 class="mt-1 text-3xl font-bold text-slate-900 dark:text-white">Gerenciar câmeras</h1>
         <p class="mt-2 max-w-2xl text-slate-600 dark:text-slate-300">
           Atualize transmissão e disponibilidade. A localização continua no fluxo dedicado.
         </p>
@@ -217,7 +234,9 @@ function editLocation() {
       {{ workspace.error.value }}
     </p>
 
-    <div class="mt-5 grid min-h-[32rem] gap-5 lg:grid-cols-[minmax(300px,0.8fr)_minmax(420px,1.2fr)]">
+    <div
+      class="mt-5 grid min-h-[32rem] gap-5 lg:grid-cols-[minmax(300px,0.8fr)_minmax(420px,1.2fr)]"
+    >
       <CameraManagementList
         :cameras="workspace.cameras.value"
         :selected-id="workspace.selected.value?.id"
@@ -248,18 +267,37 @@ function editLocation() {
       >
         Selecione uma câmera para visualizar e editar seus dados.
       </div>
-      <CameraManagementEditor
-        v-else-if="workspace.selected.value"
-        :camera="workspace.selected.value"
-        :saving="workspace.saving.value"
-        :error="workspace.selectedError.value"
-        @close="workspace.closeEditor"
-        @dirty-change="workspace.setDirty"
-        @save="save"
-        @edit-location="editLocation"
-      />
+      <div v-else-if="workspace.selected.value">
+        <CameraManagementEditor
+          :camera="workspace.selected.value"
+          :saving="workspace.saving.value"
+          :error="workspace.selectedError.value"
+          @close="workspace.closeEditor"
+          @dirty-change="workspace.setDirty"
+          @save="save"
+          @edit-location="editLocation"
+        />
+        <button
+          v-if="canDelete"
+          type="button"
+          :disabled="workspace.saving.value"
+          class="mt-4 min-h-11 rounded-xl border border-red-700 px-4 font-semibold text-red-700 disabled:opacity-50 dark:text-red-300"
+          @click="openDelete"
+        >
+          Excluir câmera
+        </button>
+      </div>
     </div>
 
+    <AdminPasswordDialog
+      v-if="deleteOpen"
+      title="Excluir câmera?"
+      :description="`A câmera ${workspace.selected.value?.description ?? ''} será excluída. Esta ação não pode ser desfeita.`"
+      :busy="workspace.saving.value"
+      :error="deleteError"
+      @cancel="deleteOpen = false"
+      @confirm="deleteCamera"
+    />
     <div
       v-if="workspace.discardDialogOpen.value"
       class="fixed inset-0 z-[90] grid place-items-center bg-[#00182F]/70 p-4"
