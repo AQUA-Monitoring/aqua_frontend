@@ -9,6 +9,7 @@ import NearbyCameraDock from './NearbyCameraDock.vue'
 import FloodCameraMonitoringApi from '../FloodCameraMonitoringApi'
 import type { CameraApiItem, NearbyCameraItem } from '../types/camera'
 import { parseApiError } from '@/shared'
+import { localePath } from '@/app/i18n'
 import {
   cameraAddressLabel,
   cameraPresentation,
@@ -87,7 +88,7 @@ function openNearbyCamera(item: NearbyCameraItem) {
     emit('selectNearby', item)
     return
   }
-  router.push(`/cameras/${item.id}`)
+  router.push(localePath(`/cameras/${item.id}`))
 }
 
 function togglePlayback() {

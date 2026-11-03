@@ -13,6 +13,7 @@ import InfoPoints from './infoPoints.vue'
 import LayersFilters from './layersFilters.vue'
 import { useNeighborhood } from '@/modules/addressing'
 import { useScreenSize } from '@/shared'
+import { localePath } from '@/app/i18n'
 import { useFloodCameraMonitoringStore } from '@/modules/cameras'
 import type { CameraApiItem } from '@/modules/cameras'
 import { useLoadingStore } from '@/stores/loading'
@@ -63,7 +64,7 @@ const { geoJson: mlGeoJson } = useMachineLearningMap()
 const { isMobile } = useScreenSize()
 const ctrl = useFloodCameraMonitoringStore()
 const floodDraft = useFloodPointDraftStore()
-const isRegisterRoute = computed(() => String(route.name) === 'Registrar ponto')
+const isRegisterRoute = computed(() => String(route.name).replace(/-en$/, '') === 'register-point')
 const loadingStore = useLoadingStore()
 const mapContainerRef = ref<HTMLElement | null>(null)
 const mapRef = shallowRef<mapboxgl.Map | null>(null)
@@ -156,7 +157,7 @@ function closeContext() {
 }
 
 function inspectCamera(camera: CameraApiItem) {
-  void router.push(`/cameras/${camera.id}`)
+  void router.push(localePath(`/cameras/${camera.id}`))
 }
 
 defineExpose({ closeContext })

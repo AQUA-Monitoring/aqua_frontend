@@ -7,8 +7,10 @@ import { useFloodPointOfflineQueue, useFloodPointsStore } from '@/modules/flood-
 import type { IMenu } from '@/shared'
 import { useNavigationAuth } from '@/app/composables/useNavigationAuth'
 import { REFERENCE_BASE_TEXT } from '@/modules/addressing'
+import { useI18n } from '@/app/i18n'
 
 const navigationAuth = useNavigationAuth()
+const { t, localePath } = useI18n()
 
 const offlineQueue = useFloodPointOfflineQueue()
 const floodPointsStore = useFloodPointsStore()
@@ -32,44 +34,44 @@ onMounted(() => {
 
 onBeforeUnmount(() => window.removeEventListener('online', syncPendingAlerts))
 
-const menu: IMenu = {
+const menu = computed<IMenu>(() => ({
   id: 'menu',
   options: [
     {
-      label: 'Home',
+      label: t('nav.home'),
       icon: 'home',
-      link: '/admin',
+      link: localePath('/admin'),
     },
     {
       label: 'Cadastre um novo ponto de alagamento',
       icon: 'add',
-      link: '/admin/registrar-ponto',
+      link: localePath('/admin/registrar-ponto'),
     },
     {
       label: 'Cadastrar nova câmera',
       icon: 'videocam',
-      link: '/admin/cameras/cadastro',
+      link: localePath('/admin/cameras/cadastro'),
     },
     {
-      label: 'Gerenciar câmeras',
+      label: t('route.manageCameras'),
       icon: 'video_settings',
-      link: '/admin/cameras',
+      link: localePath('/admin/cameras'),
     },
     {
-      label: 'Inteligência do monitoramento',
+      label: t('route.intelligence'),
       icon: 'model_training',
-      link: '/admin/inteligencia',
+      link: localePath('/admin/inteligencia'),
     },
     {
-      label: 'Alertas operacionais',
+      label: t('route.alerts'),
       icon: 'notifications_active',
-      link: '/admin/alertas',
+      link: localePath('/admin/alertas'),
     },
   ],
-}
+}))
 const route = useRoute()
 const activeLink = computed(() =>
-  [...menu.options]
+  [...menu.value.options]
     .sort((a, b) => b.link.length - a.link.length)
     .find((item) => route.path === item.link || route.path.startsWith(`${item.link}/`))?.link,
 )
@@ -78,7 +80,7 @@ const shortLabels = ['Início', 'Novo ponto', 'Nova câmera', 'Câmeras', 'Intel
 
 <template>
   <div class="min-h-dvh">
-    <HeaderComp :title="String($route.name)" v-bind="navigationAuth" />
+    <HeaderComp :title="$t(String($route.meta.titleKey ?? ''))" v-bind="navigationAuth" />
     <main
       class="relative mx-auto grid min-h-[64vh] w-full grid-cols-1 items-start gap-6 px-4 pb-30 sm:px-6 md:pb-10 lg:grid-cols-[4.5rem_minmax(0,1fr)] lg:gap-6 lg:px-8"
     >
@@ -107,7 +109,7 @@ const shortLabels = ['Início', 'Novo ponto', 'Nova câmera', 'Câmeras', 'Intel
         <RouterView />
       </div>
     </main>
-    <MobileMenu :title="String($route.name)" :user-type="navigationAuth.userType" />
+    <MobileMenu :title="$t(String($route.meta.titleKey ?? ''))" :user-type="navigationAuth.userType" />
     <FooterComp />
   </div>
 </template>

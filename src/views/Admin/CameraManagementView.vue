@@ -10,6 +10,7 @@ import {
 } from '@/modules/cameras'
 import type { CameraUpdatePayload } from '@/modules/cameras'
 import { CatalogFilterPanel, parseApiError } from '@/shared'
+import { localePath } from '@/app/i18n'
 
 import AdminPasswordDialog from '@/shared/components/AdminPasswordDialog.vue'
 import { useAuthStore } from '@/modules/auth'
@@ -79,7 +80,7 @@ function editLocation() {
   if (!id) return
   workspace.runGuarded(async () => {
     await router.push({
-      path: `/admin/cameras/${id}/localizacao`,
+      path: localePath(`/admin/cameras/${id}/localizacao`),
       query: { return_to: route.fullPath },
     })
   })
@@ -101,7 +102,7 @@ function editLocation() {
         </p>
       </div>
       <RouterLink
-        to="/admin/cameras/cadastro"
+        :to="$localePath('/admin/cameras/cadastro')"
         class="min-h-11 rounded-xl bg-[#2768CA] px-4 py-2.5 font-semibold text-white focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#2768CA]"
       >
         Cadastrar câmera

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { isAxiosError } from 'axios'
 import { ref } from 'vue'
 import router from '@/app/router'
+import { localePath } from '@/app/i18n'
 import { toast, type ToastOptions } from 'vue3-toastify'
 import AuthApi from '../services/Auth'
 import { useLoadingStore } from '@/stores/loading'
@@ -170,7 +171,7 @@ export const useAuthStore = defineStore('auth', () => {
       } as ToastOptions)
     }
 
-    await router.push({ name: 'auth', query: { mode: 'login', ...(reason ? { reason } : {}) } })
+    await router.push({ path: localePath('/auth'), query: { mode: 'login', ...(reason ? { reason } : {}) } })
   }
 
   return {

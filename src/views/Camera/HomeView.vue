@@ -10,9 +10,11 @@ import { useCameraOverviewRoute } from '@/modules/cameras'
 import { useCamerasMonitoring } from '@/modules/cameras'
 import type { NeighborhoodDto } from '@/modules/cameras'
 import { CatalogFilterPanel } from '@/shared'
+import { localize, useI18n } from '@/app/i18n'
 
 const route = useRoute()
 const router = useRouter()
+const { locale } = useI18n()
 const isDesktop = useMediaQuery('(min-width: 1024px)')
 const {
   cameras,
@@ -31,11 +33,11 @@ const {
 
 const lastUpdatedLabel = computed(() =>
   lastCompletedAt.value
-    ? new Intl.DateTimeFormat('pt-BR', {
+    ? new Intl.DateTimeFormat(locale.value, {
         dateStyle: 'short',
         timeStyle: 'short',
       }).format(new Date(lastCompletedAt.value))
-    : 'Ainda não atualizado',
+    : localize('Ainda não atualizado', 'Not updated yet'),
 )
 
 const territoryNeighborhoods = ref<NeighborhoodDto[]>([])
@@ -167,12 +169,11 @@ onBeforeUnmount(() => {
     <header class="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
       <div>
         <p class="text-sm font-semibold tracking-[0.18em] text-[#2768CA] uppercase">
-          Monitoramento por câmeras
+          {{ $l('Monitoramento por câmeras', 'Camera monitoring') }}
         </p>
-        <h1 class="mt-1 text-3xl font-semibold sm:text-4xl">Visão geral das câmeras</h1>
+        <h1 class="mt-1 text-3xl font-semibold sm:text-4xl">{{ $l('Visão geral das câmeras', 'Camera overview') }}</h1>
         <p class="mt-2 max-w-3xl text-sm text-slate-600 sm:text-base dark:text-slate-300">
-          Priorize a inspeção por estado operacional e por indícios da análise automática. O
-          resultado não confirma uma ocorrência.
+          {{ $l('Priorize a inspeção por estado operacional e por indícios da análise automática. O resultado não confirma uma ocorrência.', 'Prioritize inspection by operational status and automated analysis signals. The result does not confirm an incident.') }}
         </p>
       </div>
       <div class="flex items-center gap-5">
@@ -184,7 +185,7 @@ onBeforeUnmount(() => {
         />
         <p v-if="!error" class="text-sm text-slate-500 dark:text-slate-400">
           <strong class="text-slate-800 dark:text-white">{{ count }}</strong>
-          câmera{{ count === 1 ? '' : 's' }} encontrada{{ count === 1 ? '' : 's' }}
+          {{ count === 1 ? $l('câmera encontrada', 'camera found') : $l('câmeras encontradas', 'cameras found') }}
         </p>
       </div>
     </header>
@@ -199,7 +200,7 @@ onBeforeUnmount(() => {
     >
       <template #search>
         <label class="relative flex-1">
-          <span class="sr-only">Buscar câmera ou endereço</span>
+          <span class="sr-only">{{ $l('Buscar câmera ou endereço', 'Search camera or address') }}</span>
           <span
             class="material-symbols-outlined absolute top-1/2 left-3 -translate-y-1/2 text-slate-400"
             aria-hidden="true"
@@ -209,74 +210,74 @@ onBeforeUnmount(() => {
             v-model="filters.search"
             type="search"
             class="min-h-12 w-full rounded-2xl border border-slate-300 bg-transparent pr-4 pl-11 outline-none focus:border-[#2768CA] focus:ring-3 focus:ring-[#2768CA]/15 dark:border-slate-600 dark:text-white dark:placeholder:text-slate-400"
-            placeholder="Buscar câmera, rua ou bairro"
+            :placeholder="$l('Buscar câmera, rua ou bairro', 'Search camera, street, or neighborhood')"
           />
         </label>
       </template>
         <label class="grid gap-1 text-xs font-semibold"
-          >Região
+          >{{ $l('Região', 'Region') }}
           <select
             v-model="filters.region_id"
             :disabled="territory.loading.value || !territory.available.value"
             class="min-h-11 rounded-xl border border-slate-300 bg-white px-3 font-normal dark:border-slate-600 dark:bg-[#00182F]"
           >
-            <option value="">Todas</option>
+            <option value="">{{ $l('Todas', 'All') }}</option>
             <option v-for="item in territory.regions.value" :key="item.id" :value="item.id">
               {{ item.name }}
             </option>
           </select>
         </label>
         <label class="grid gap-1 text-xs font-semibold"
-          >Bairro
+          >{{ $l('Bairro', 'Neighborhood') }}
           <select
             v-model="filters.neighborhood_id"
             :disabled="territory.loading.value || !territory.available.value"
             class="min-h-11 rounded-xl border border-slate-300 bg-white px-3 font-normal dark:border-slate-600 dark:bg-[#00182F]"
           >
-            <option value="">Todos</option>
+            <option value="">{{ $l('Todos', 'All') }}</option>
             <option v-for="item in neighborhoodOptions" :key="item.id" :value="item.id">
               {{ item.name }}
             </option>
           </select>
         </label>
         <label class="grid gap-1 text-xs font-semibold"
-          >Estado administrativo
+          >{{ $l('Estado administrativo', 'Administrative status') }}
           <select
             v-model="filters.administrative_status"
             class="min-h-11 rounded-xl border border-slate-300 bg-white px-3 font-normal dark:border-slate-600 dark:bg-[#00182F]"
           >
-            <option value="">Todos</option>
-            <option value="ACTIVE">Ativa</option>
-            <option value="INACTIVE">Inativa</option>
+            <option value="">{{ $l('Todos', 'All') }}</option>
+            <option value="ACTIVE">{{ $l('Ativa', 'Active') }}</option>
+            <option value="INACTIVE">{{ $l('Inativa', 'Inactive') }}</option>
           </select>
         </label>
         <label class="grid gap-1 text-xs font-semibold"
-          >Transmissão
+          >{{ $l('Transmissão', 'Stream') }}
           <select
             v-model="filters.stream_status"
             class="min-h-11 rounded-xl border border-slate-300 bg-white px-3 font-normal dark:border-slate-600 dark:bg-[#00182F]"
           >
-            <option value="">Todas</option>
-            <option value="UNKNOWN">Não verificada</option>
-            <option value="CHECKING">Verificando</option>
-            <option value="ONLINE">Disponível</option>
-            <option value="UNAVAILABLE">Indisponível</option>
+            <option value="">{{ $l('Todas', 'All') }}</option>
+            <option value="UNKNOWN">{{ $l('Não verificada', 'Not checked') }}</option>
+            <option value="CHECKING">{{ $l('Verificando', 'Checking') }}</option>
+            <option value="ONLINE">{{ $l('Disponível', 'Available') }}</option>
+            <option value="UNAVAILABLE">{{ $l('Indisponível', 'Unavailable') }}</option>
           </select>
         </label>
         <label class="grid gap-1 text-xs font-semibold"
-          >Análise
+          >{{ $l('Análise', 'Analysis') }}
           <select
             v-model="filters.analysis_status"
             class="min-h-11 rounded-xl border border-slate-300 bg-white px-3 font-normal dark:border-slate-600 dark:bg-[#00182F]"
           >
-            <option value="">Todas</option>
-            <option value="NOT_ANALYZED">Não analisada</option>
-            <option value="RUNNING">Em andamento</option>
-            <option value="AVAILABLE">Disponível</option>
-            <option value="STALE">Desatualizada</option>
-            <option value="NO_FRAME">Sem imagem</option>
-            <option value="MODEL_UNAVAILABLE">Modelo indisponível</option>
-            <option value="ERROR">Erro</option>
+            <option value="">{{ $l('Todas', 'All') }}</option>
+            <option value="NOT_ANALYZED">{{ $l('Não analisada', 'Not analyzed') }}</option>
+            <option value="RUNNING">{{ $l('Em andamento', 'In progress') }}</option>
+            <option value="AVAILABLE">{{ $l('Disponível', 'Available') }}</option>
+            <option value="STALE">{{ $l('Desatualizada', 'Outdated') }}</option>
+            <option value="NO_FRAME">{{ $l('Sem imagem', 'No image') }}</option>
+            <option value="MODEL_UNAVAILABLE">{{ $l('Modelo indisponível', 'Model unavailable') }}</option>
+            <option value="ERROR">{{ $l('Erro', 'Error') }}</option>
           </select>
         </label>
         <p
@@ -284,7 +285,7 @@ onBeforeUnmount(() => {
           class="text-xs text-amber-700 sm:col-span-2 xl:col-span-5 dark:text-amber-300"
           role="status"
         >
-          {{ territory.error.value }} Os demais filtros continuam disponíveis.
+          {{ territory.error.value }} {{ $l('Os demais filtros continuam disponíveis.', 'The other filters remain available.') }}
         </p>
     </CatalogFilterPanel>
 
@@ -293,11 +294,11 @@ onBeforeUnmount(() => {
         <button type="button"
           class="min-h-11 rounded-xl border border-[#2768CA] px-4 text-sm font-semibold text-[#2768CA] disabled:opacity-60"
           :disabled="refreshing" @click="refreshOverview">
-          {{ refreshing ? 'Atualizando...' : 'Atualizar dados' }}
+          {{ refreshing ? $l('Atualizando...', 'Updating...') : $l('Atualizar dados', 'Refresh data') }}
         </button>
 
         <p class="mt-1 text-center text-xs text-slate-500 dark:text-slate-400">
-          Última atualização: {{ lastUpdatedLabel }}
+          {{ $l('Última atualização:', 'Last updated:') }} {{ lastUpdatedLabel }}
         </p>
       </div>
       <div class="flex flex-wrap items-center justify-end gap-2">
@@ -307,7 +308,7 @@ onBeforeUnmount(() => {
           :aria-pressed="previewsPaused"
           @click="setPreviewsPaused(!previewsPaused)"
         >
-          {{ previewsPaused ? 'Retomar prévias' : 'Pausar prévias' }}
+          {{ previewsPaused ? $l('Retomar prévias', 'Resume previews') : $l('Pausar prévias', 'Pause previews') }}
         </button>
         <div
           class="flex items-center gap-1 rounded-xl border border-slate-300 bg-white p-1 shadow-sm dark:border-slate-600 dark:bg-[#00182F]"
@@ -421,7 +422,7 @@ onBeforeUnmount(() => {
         class="min-h-11 font-semibold underline"
         @click="load(currentFilters())"
       >
-        Tentar novamente
+        {{ $l('Tentar novamente', 'Try again') }}
       </button>
     </div>
 
@@ -431,7 +432,7 @@ onBeforeUnmount(() => {
           v-if="loading"
           class="grid gap-3 lg:gap-4"
           :style="cameraGridStyle"
-          aria-label="Carregando câmeras"
+          :aria-label="$l('Carregando câmeras', 'Loading cameras')"
         >
           <div
             v-for="item in 5"
@@ -446,16 +447,16 @@ onBeforeUnmount(() => {
           <span class="material-symbols-outlined text-5xl text-slate-400" aria-hidden="true"
             >videocam_off</span
           >
-          <h2 class="mt-3 text-lg font-semibold">Nenhuma câmera encontrada</h2>
+          <h2 class="mt-3 text-lg font-semibold">{{ $l('Nenhuma câmera encontrada', 'No cameras found') }}</h2>
           <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Ajuste a busca ou limpe os filtros para ampliar a consulta.
+            {{ $l('Ajuste a busca ou limpe os filtros para ampliar a consulta.', 'Change your search or clear the filters to broaden the results.') }}
           </p>
         </div>
         <div
           v-else
           class="grid gap-3 lg:gap-4"
           :style="cameraGridStyle"
-          aria-label="Grade de câmeras"
+          :aria-label="$l('Grade de câmeras', 'Camera grid')"
           :data-density="density"
         >
           <CameraOverviewCard
@@ -474,7 +475,7 @@ onBeforeUnmount(() => {
             :disabled="loadingMore"
             @click="loadMore"
           >
-            {{ loadingMore ? 'Carregando...' : 'Carregar mais' }}
+            {{ loadingMore ? $l('Carregando...', 'Loading...') : $l('Carregar mais', 'Load more') }}
           </button>
         </div>
       </div>
@@ -484,7 +485,7 @@ onBeforeUnmount(() => {
           v-if="mobileInspectionOpen"
           type="button"
           class="fixed inset-0 z-[60] bg-[#00182F]/55 lg:hidden"
-          aria-label="Fechar inspeção"
+          :aria-label="$l('Fechar inspeção', 'Close inspection')"
           @click="closeInspection"
         ></button>
         <CameraInspectionPanel

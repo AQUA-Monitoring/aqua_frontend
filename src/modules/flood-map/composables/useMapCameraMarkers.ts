@@ -4,6 +4,7 @@ import router from '@/app/router'
 import { cameraCoordinates } from '@/modules/cameras'
 import { isInsideAquaTerritory } from '@/shared'
 import type { CameraApiItem, useFloodCameraMonitoringStore } from '@/modules/cameras'
+import { localePath } from '@/app/i18n'
 
 type CameraStore = ReturnType<typeof useFloodCameraMonitoringStore>
 
@@ -88,7 +89,7 @@ export const useMapCameraMarkers = (
           options?.onSelect?.(camera)
           return
         }
-        void router.push(`/cameras/${camera.id}`)
+        void router.push(localePath(`/cameras/${camera.id}`))
       }
       element.addEventListener('click', activate)
       const marker = new mapboxgl.Marker(element).setLngLat(coordinates)

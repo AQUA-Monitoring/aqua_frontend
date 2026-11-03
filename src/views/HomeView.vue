@@ -12,6 +12,7 @@ import {
 import type { MapContextState } from '@/modules/flood-map'
 import { useFloodPointsMap } from '@/modules/flood-points'
 import { useScreenSize } from '@/shared'
+import { localePath } from '@/app/i18n'
 
 const { cameras, loading, error } = usePriorityCameras()
 const router = useRouter()
@@ -97,7 +98,7 @@ function openRelatedCamera(camera: CameraApiItem) {
 }
 
 function inspectCamera(camera: CameraApiItem) {
-  void router.push(`/cameras/${camera.id}`)
+  void router.push(localePath(`/cameras/${camera.id}`))
 }
 </script>
 

@@ -49,7 +49,7 @@ watch(() => props.id, loadPost, { immediate: true })
       <p class="mt-2 text-gray-600 dark:text-gray-300">
         Verifique o endereço ou retorne para a página do blog.
       </p>
-      <RouterLink to="/blog" class="mt-5 inline-block font-semibold text-[#0453AF] hover:underline dark:text-blue-300">
+      <RouterLink :to="$localePath('/blog')" class="mt-5 inline-block font-semibold text-[#0453AF] hover:underline dark:text-blue-300">
         Voltar ao blog
       </RouterLink>
     </div>

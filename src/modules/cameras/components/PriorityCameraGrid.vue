@@ -113,7 +113,7 @@ function handleDialogKeydown(event: KeyboardEvent) {
   <section class="priority-cameras grid min-w-0 w-full gap-3" aria-labelledby="admin-priority-title">
     <div class="flex flex-wrap items-center justify-between gap-3">
       <h3 id="admin-priority-title" class="text-xl font-bold">Câmeras prioritárias</h3>
-      <RouterLink to="/cameras" class="text-sm font-semibold text-[#2768CA]">Ver todas</RouterLink>
+      <RouterLink :to="$localePath('/cameras')" class="text-sm font-semibold text-[#2768CA]">Ver todas</RouterLink>
     </div>
     <p v-if="loading" class="text-sm text-slate-500" role="status">Carregando câmeras...</p>
     <p v-else-if="error" class="text-sm text-red-700" role="alert">{{ error }}</p>

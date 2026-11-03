@@ -32,14 +32,14 @@ onMounted(() => notifications.loadOpenCount().catch(() => undefined))
     <div class="grid min-w-0 items-stretch gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
       <div class="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-1">
         <RouterLink
-          to="/admin/alertas"
+          :to="$localePath('/admin/alertas')"
           class="flex items-center justify-between gap-3 rounded-2xl border border-[#2768CA]/30 bg-[#2768CA]/10 p-5 text-[#0750AF] dark:text-blue-200"
         >
           <span><strong class="block">Alertas operacionais</strong><small>Indícios aguardando revisão humana</small></span>
           <span class="shrink-0 rounded-full bg-[#2768CA] px-3 py-1 font-semibold text-white" :aria-label="`${notifications.openCount} indícios abertos`">{{ notifications.openCount }}</span>
         </RouterLink>
         <RouterLink
-          to="/admin/inteligencia"
+          :to="$localePath('/admin/inteligencia')"
           class="rounded-2xl border border-[#2768CA]/30 bg-[#2768CA]/10 p-5 text-[#0750AF] dark:text-blue-200"
         >
           <strong class="block">Inteligência do monitoramento</strong>

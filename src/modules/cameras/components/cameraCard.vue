@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router'
 import type { CameraWithPrediction } from '@/modules/forecast'
 import { legacyCameraAnalysisLabel } from '../utils/cameraPresentation'
+import { localePath } from '@/app/i18n'
 
 defineProps<{ cam: CameraWithPrediction }>()
 const router = useRouter()
@@ -29,7 +30,7 @@ const router = useRouter()
     <button
       type="button"
       class="mt-5 min-h-11 w-full rounded-xl bg-[#2768CA] px-4 font-semibold text-white"
-      @click="router.push(`/cameras/${cam.id}`)"
+      @click="router.push(localePath(`/cameras/${cam.id}`))"
     >
       Inspecionar
     </button>

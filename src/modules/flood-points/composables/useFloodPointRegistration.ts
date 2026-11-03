@@ -17,6 +17,7 @@ import { useFloodPointDraftStore } from '../stores/FloodPointDraft'
 import { useFloodPointsStore } from '../stores/FloodPoints'
 import type { CreateFloodPointPayload } from '../types/floodPoints'
 import { formatTerritoryLabel } from '@/shared'
+import { localePath } from '@/app/i18n'
 
 const MAX_DURATION_MINUTES = 10080
 const FORM_STORAGE_KEY = 'aqua:flood-point-form-draft'
@@ -296,7 +297,7 @@ export function useFloodPointRegistration() {
         allowNavigation.value = true
         resetAll()
         toast.info('Sem conexão. O alerta será publicado automaticamente quando a rede voltar.')
-        router.push('/admin')
+        router.push(localePath('/admin'))
         return
       }
       payload = await resolvePayloadWithReferenceBase(payload)
@@ -305,7 +306,7 @@ export function useFloodPointRegistration() {
       allowNavigation.value = true
       resetAll()
       toast.success('Alerta de alagamento publicado com sucesso.')
-      router.push('/admin')
+      router.push(localePath('/admin'))
     } catch (error: unknown) {
       if (isReferenceBaseChangedError(error)) {
         toast.error(REFERENCE_BASE_TEXT.changed)
@@ -316,7 +317,7 @@ export function useFloodPointRegistration() {
         allowNavigation.value = true
         resetAll()
         toast.info('A conexão falhou. O alerta ficou salvo para sincronização automática.')
-        router.push('/admin')
+        router.push(localePath('/admin'))
         return
       }
       toast.error(

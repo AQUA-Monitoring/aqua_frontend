@@ -6,6 +6,7 @@ import { AuthLogin, AuthRegister } from '../components'
 import type { FormValues, IFormField } from '@/shared'
 import { useScreenSize } from '@/shared'
 import { useAuthStore } from '../stores/auth'
+import { localePath } from '@/app/i18n'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,7 +18,7 @@ const isLogin = ref(route.query.mode !== 'register')
 
 onMounted(() => {
   if (authStore.isAuthenticated) {
-    router.push('/')
+    router.push(localePath('/'))
   }
 })
 
@@ -101,7 +102,7 @@ async function handleLogin(values: FormValues) {
       email: stringValue(values.email),
       password: stringValue(values.password),
     })
-    router.push('/')
+    router.push(localePath('/'))
   } catch (error: unknown) {
     toast.error(errorMessage(error, 'Erro ao realizar login'))
   }
@@ -114,7 +115,7 @@ async function handleRegister(values: FormValues) {
       password: stringValue(values.password),
     })
     toast.success('Cadastro realizado com sucesso!', { autoClose: 2000 })
-    router.push('/')
+    router.push(localePath('/'))
   } catch (error: unknown) {
     toast.error(errorMessage(error, 'Erro ao realizar cadastro'))
   }

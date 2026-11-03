@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { CameraInspectionPanel } from '@/modules/cameras'
 import { useCamerasMonitoring } from '@/modules/cameras'
 import type { CameraApiItem } from '@/modules/cameras'
+import { localePath } from '@/app/i18n'
 
 const props = defineProps<{ id: string }>()
 const router = useRouter()
@@ -27,7 +28,7 @@ watch(
 )
 
 function close() {
-  router.push('/cameras')
+  router.push(localePath('/cameras'))
 }
 </script>
 

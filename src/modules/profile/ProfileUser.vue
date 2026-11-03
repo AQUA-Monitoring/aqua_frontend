@@ -130,7 +130,7 @@ function handleLogout() {
     </dl>
 
     <div class="profile-actions">
-      <RouterLink to="/seguranca" class="profile-action edit-action">
+      <RouterLink :to="$localePath('/seguranca')" class="profile-action edit-action">
         <span class="material-symbols-outlined" aria-hidden="true">edit</span>
         Editar informações
       </RouterLink>

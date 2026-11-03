@@ -7,10 +7,10 @@ const navigationAuth = useNavigationAuth()
 
 <template>
   <div class="min-h-dvh">
-    <HeaderComp :title="String($route.name)" v-bind="navigationAuth" />
+    <HeaderComp :title="$t(String($route.meta.titleKey ?? ''))" v-bind="navigationAuth" />
     <main class="min-h-[64vh] relative grid pb-30 md:pb-10 md:px-15 lg:px-20">
       <RouterView />
-      <MobileMenu :title="String($route.name)" :user-type="navigationAuth.userType" />
+      <MobileMenu :title="$t(String($route.meta.titleKey ?? ''))" :user-type="navigationAuth.userType" />
     </main>
     <FooterComp />
   </div>

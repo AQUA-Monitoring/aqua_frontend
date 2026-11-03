@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRouter, type RouteLocationRaw } from 'vue-router'
-import { ThemeSwitcher } from '@/shared'
+import { LanguageSwitcher, ThemeSwitcher } from '@/shared'
 import { useScreenSize } from '@/shared'
+import { useI18n } from '@/app/i18n'
 
 const props = defineProps<{
   title?: string
@@ -12,22 +13,17 @@ const props = defineProps<{
 
 const router = useRouter()
 const { isMobile } = useScreenSize()
+const { t, localePath } = useI18n()
 const openMenuId = ref<number | null>(null)
 const toggleMenu = (id: number) => {
   openMenuId.value = openMenuId.value === id ? null : id
 }
 
-const allowedTitles = [
-  'Recuperação',
-  'Cadastrar um novo ponto',
-  'Pagamento',
-  'Meu perfil',
-  'Suporte',
-  'Perfil',
-  'Administração',
-  // 'Segurança',
-]
-const shouldShowTitle = computed(() => allowedTitles.includes(props.title ?? ''))
+const allowedTitles = computed(() => [
+  t('route.recovery'), t('route.registerPoint'), t('route.payment'), t('route.support'),
+  t('nav.profile'), t('route.admin'),
+])
+const shouldShowTitle = computed(() => allowedTitles.value.includes(props.title ?? ''))
 
 interface MenuItem {
   id: number
@@ -38,33 +34,33 @@ interface MenuItem {
   options?: { id: number; label: string; link: string }[]
 }
 
-const desktopMenu: MenuItem[] = [
-  { id: 0, img: '/icons/aqua.svg', label: 'Aqua', link: '/' },
-  { id: 1, label: 'Início', link: '/' },
-  { id: 2, label: 'Câmeras', link: '/cameras' },
+const desktopMenu = computed<MenuItem[]>(() => [
+  { id: 0, img: '/icons/aqua.svg', label: 'Aqua', link: localePath('/') },
+  { id: 1, label: t('nav.home'), link: localePath('/') },
+  { id: 2, label: t('nav.cameras'), link: localePath('/cameras') },
   {
     id: 3,
-    label: 'Mais',
+    label: t('nav.more'),
     options: [
-      { id: 0, label: 'Transmissão demo', link: '/demo' },
-      { id: 1, label: 'Blog', link: '/blog' },
-      { id: 2, label: 'Doar', link: '/doacao' },
-      { id: 3, label: 'Suporte', link: '/suporte' },
+      { id: 0, label: t('nav.demo'), link: localePath('/demo') },
+      { id: 1, label: t('nav.blog'), link: localePath('/blog') },
+      { id: 2, label: t('nav.donate'), link: localePath('/doacao') },
+      { id: 3, label: t('nav.support'), link: localePath('/suporte') },
     ],
   },
-]
+])
 
-const desktopMenuAccount: MenuItem[] = [
-  { id: 0, label: 'Entrar', link: { name: 'auth', query: { mode: 'login' } } },
-  { id: 1, label: 'Criar conta', link: { name: 'auth', query: { mode: 'register' } } },
-  { id: 2, icon: 'person', link: '/seguranca' },
-]
+const desktopMenuAccount = computed<MenuItem[]>(() => [
+  { id: 0, label: t('nav.signIn'), link: { path: localePath('/auth'), query: { mode: 'login' } } },
+  { id: 1, label: t('nav.signUp'), link: { path: localePath('/auth'), query: { mode: 'register' } } },
+  { id: 2, icon: 'person', link: localePath('/seguranca') },
+])
 
 </script>
 
 <template>
   <header
-    v-if="!(isMobile && title === 'Início')"
+    v-if="!(isMobile && title === t('route.home'))"
     class="z-10 bg-transparent px-7 lg:bg-white lg:px-20 xl:px-25 py-3 dark:bg-[#00182F] dark:text-white"
   >
     <nav class="lg:flex lg:items-center lg:justify-between">
@@ -126,10 +122,10 @@ const desktopMenuAccount: MenuItem[] = [
         </li>
         <li
           v-if="userType === 'admin'"
-          :class="'Administração' == title ? 'text-[#2768CA]' : ''"
+          :class="t('route.admin') == title ? 'text-[#2768CA]' : ''"
           class="relative cursor-pointer"
         >
-          <RouterLink to="/admin"> Administração </RouterLink>
+          <RouterLink :to="localePath('/admin')"> {{ t('nav.admin') }} </RouterLink>
         </li>
       </ul>
 
@@ -141,7 +137,7 @@ const desktopMenuAccount: MenuItem[] = [
           v-show="
             isAuthenticated
               ? item.icon !== undefined
-              : item.label === 'Entrar' || item.label === 'Criar conta'
+              : item.id === 0 || item.id === 1
           "
         >
           <RouterLink v-if="item.icon" :to="item.link!">
@@ -152,7 +148,7 @@ const desktopMenuAccount: MenuItem[] = [
             v-else
             :to="item.link!"
             :class="
-              item.label == 'Criar conta'
+              item.id === 1
                 ? 'rounded-lg bg-blue-500 px-4 py-2 font-semibold text-white transition-colors duration-300 hover:bg-blue-600'
                 : ''
             "
@@ -163,6 +159,7 @@ const desktopMenuAccount: MenuItem[] = [
         <li>
           <ThemeSwitcher class="hidden lg:block" />
         </li>
+        <li><LanguageSwitcher /></li>
       </ul>
     </nav>
   </header>

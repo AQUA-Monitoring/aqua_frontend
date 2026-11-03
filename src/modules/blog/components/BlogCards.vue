@@ -16,7 +16,7 @@ onMounted(async () => {
   <ul class="grid lg:grid-cols-4 gap-10 p-19 pt-0 place-content-center">
     <li v-for="(notice, index) in blogStore.blogs" :key="index">
       <RouterLink
-        :to="`/blog/${notice.id}`"
+        :to="$localePath(`/blog/${notice.id}`)"
         class="relative h-100 flex flex-col lg:flex-row overflow-hidden rounded-2xl cursor-pointer group bg-[#0453AF] hover:shadow-2xl transition duration-300 hover:-translate-y-2"
       >
         <img

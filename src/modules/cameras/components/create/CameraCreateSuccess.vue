@@ -23,7 +23,7 @@ defineProps<{
 
     <div class="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
       <RouterLink
-        to="/admin"
+        :to="$localePath('/admin')"
         class="min-h-12 rounded-xl border border-emerald-700 px-5 py-3 font-semibold"
       >
         Voltar à administração

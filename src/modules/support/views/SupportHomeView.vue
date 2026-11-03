@@ -15,17 +15,17 @@ const openPopUp = (support: ISupport) => {
 
 <template>
   <section class="px-10 py-5 lg:py-0">
-    <h1 class="text-center text-4xl font-semibold mt-10 mb-20 hidden lg:block">Suporte</h1>
+    <h1 class="text-center text-4xl font-semibold mt-10 mb-20 hidden lg:block">{{ $l('Suporte', 'Support') }}</h1>
 
     <div class="md:flex grid gap-5 md:gap-10 items-center justify-between lg:justify-start">
       <p class="flex items-center gap-2 font-semibold">
         <span class="material-symbols-outlined align-middle"> tune </span>
-        Filtrar atendimentos
+        {{ $l('Filtrar atendimentos', 'Filter support requests') }}
       </p>
 
       <div class="flex gap-3">
-        <FilterButton title="Categoria" :options="['Financeiro', 'Sistema', 'Cadastro']" />
-        <FilterButton title="Status" :options="['Concluído', 'Pendente']" />
+        <FilterButton :title="$l('Categoria', 'Category')" :options="[$l('Financeiro', 'Billing'), $l('Sistema', 'System'), $l('Cadastro', 'Account')]" />
+        <FilterButton :title="$l('Status', 'Status')" :options="[$l('Concluído', 'Completed'), $l('Pendente', 'Pending')]" />
       </div>
     </div>
 

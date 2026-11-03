@@ -5,6 +5,7 @@ import AuthApi from '../services/Auth'
 import { loadGoogleIdentity, type GoogleIdentity } from '../services/googleIdentity'
 import { useTheme } from '@/shared/composables/useTheme'
 import { useAuthStore } from '../stores/auth'
+import { localePath } from '@/app/i18n'
 
 const props = withDefaults(defineProps<{ mode?: 'login' | 'register' }>(), { mode: 'login' })
 const router = useRouter()
@@ -55,7 +56,7 @@ async function initialize() {
         error.value = ''
         try {
           await auth.loginWithGoogle({ credential, challenge: config.challenge })
-          if (!disposed) await router.push('/')
+          if (!disposed) await router.push(localePath('/'))
         } catch (cause) {
           if (!disposed) {
             error.value = cause instanceof Error ? cause.message : 'Não foi possível entrar com Google. Tente novamente.'

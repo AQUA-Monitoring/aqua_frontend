@@ -91,7 +91,7 @@ function probabilityTone(probability: number) {
   <section
     class="grid min-h-0"
     :class="
-      String(route.name) === 'Administração'
+      String(route.name).replace(/-en$/, '') === 'admin'
         ? ''
         : props.externalScroll
           ? ''

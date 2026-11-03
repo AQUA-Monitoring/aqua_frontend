@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useScreenSize } from '@/shared'
+import { useI18n } from '@/app/i18n'
 
 const props = defineProps<{ title?: string; userType?: string | null }>()
 const { isMobile } = useScreenSize()
+const { t, localePath } = useI18n()
 
 interface Menu {
   icon: string
@@ -19,25 +21,25 @@ interface Menu {
 const menubar = computed<Menu[]>(() => {
   const items: Menu[] = [
     {
-      label: 'Menu',
+      label: t('nav.menu'),
       icon: 'add',
       options: [
-        { label: '', icon: 'live_tv', link: '/demo' },
-        { label: '', icon: 'docs', link: '/blog' },
-        { label: '', icon: 'camera_outdoor', link: '/cameras' },
-        { label: '', icon: 'savings', link: '/doacao' },
-        { label: '', icon: 'contact_support', link: '/suporte' },
+        { label: t('nav.demo'), icon: 'live_tv', link: localePath('/demo') },
+        { label: t('nav.blog'), icon: 'docs', link: localePath('/blog') },
+        { label: t('nav.cameras'), icon: 'camera_outdoor', link: localePath('/cameras') },
+        { label: t('nav.donate'), icon: 'savings', link: localePath('/doacao') },
+        { label: t('nav.support'), icon: 'contact_support', link: localePath('/suporte') },
       ],
     },
-    { label: 'Início', icon: 'home', link: '/' },
-    { label: 'Perfil', icon: 'person', link: '/seguranca' },
+    { label: t('nav.home'), icon: 'home', link: localePath('/') },
+    { label: t('nav.profile'), icon: 'person', link: localePath('/seguranca') },
   ]
 
   if (props.userType === 'admin') {
     items.push({
-      label: 'Admin',
+      label: t('nav.admin'),
       icon: 'dashboard',
-      link: '/admin',
+      link: localePath('/admin'),
     })
   }
 

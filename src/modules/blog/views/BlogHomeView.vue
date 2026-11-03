@@ -1,13 +1,20 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import BlogCards from '../components/BlogCards.vue'
 import BlogHero from '../components/BlogHero.vue'
+import { useI18n } from '@/app/i18n'
 
 interface Topic {
   title: string
   description: string
 }
 
-const topics: Topic[] = [
+const { isEnglish } = useI18n()
+const topics = computed<Topic[]>(() => isEnglish.value ? [
+  { title: 'Causes', description: 'Learn about the causes of flooding in Joinville, including heavy rain, high tides, and urban growth.' },
+  { title: 'History', description: 'Explore the history of floods in Joinville and their impacts over time.' },
+  { title: 'Tips', description: 'Find prevention and safety guidance for periods of flooding in Joinville.' },
+] : [
   {
     title: 'Causas',
     description:
@@ -22,7 +29,7 @@ const topics: Topic[] = [
     title: 'Dicas',
     description: 'Confira dicas de prevenção e segurança para períodos de enchentes em Joinville.',
   },
-]
+])
 </script>
 
 <template>
@@ -30,7 +37,7 @@ const topics: Topic[] = [
     <BlogHero />
 
     <div class="my-10 grid gap-10">
-      <h2 class="font-semibold ml-12 text-2xl md:text-3xl lg:text-4xl">Encontre</h2>
+      <h2 class="font-semibold ml-12 text-2xl md:text-3xl lg:text-4xl">{{ $l('Encontre', 'Explore') }}</h2>
       <ul class="flex flex-col lg:flex-row px-14">
         <li
           v-for="(topic, index) in topics"

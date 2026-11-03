@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from '@/app/i18n'
+
+const { t, localePath } = useI18n()
 interface Item {
   id: number
   icon?: string
@@ -49,18 +53,18 @@ const social: Item[][] = [
   ],
 ]
 
-const menu: Item[][] = [
+const menu = computed<Item[][]>(() => [
   [
-    { id: 0, name: 'Home', link: '/' },
-    { id: 1, name: 'Câmeras', link: '/cameras' },
-    { id: 2, name: 'Minha conta', link: '/minha-conta' },
+    { id: 0, name: t('nav.home'), link: localePath('/') },
+    { id: 1, name: t('nav.cameras'), link: localePath('/cameras') },
+    { id: 2, name: t('nav.account'), link: localePath('/seguranca') },
   ],
   [
-    { id: 0, name: 'Sobre nós', link: '/sobre' },
-    { id: 1, name: 'Mapa', link: '/mapa' },
-    { id: 2, name: 'Suporte', link: '/suporte' },
+    { id: 0, name: t('nav.about'), link: localePath('/sobre') },
+    { id: 1, name: t('nav.map'), link: localePath('/') },
+    { id: 2, name: t('nav.support'), link: localePath('/suporte') },
   ],
-]
+])
 </script>
 
 <template>
