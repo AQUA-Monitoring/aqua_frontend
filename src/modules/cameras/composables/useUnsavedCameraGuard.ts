@@ -1,3 +1,4 @@
+import { translateUi } from '@/app/i18n'
 import { computed, onBeforeUnmount, onMounted, type Ref } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import type { CameraCreateFormState, CameraCreateStep } from '../types/cameraCreate'
@@ -31,7 +32,7 @@ export function useUnsavedCameraGuard(
 
   onBeforeRouteLeave(() => {
     if (allowNavigation.value || !hasUnsavedChanges.value) return true
-    return window.confirm('Há alterações não salvas neste cadastro. Deseja sair mesmo assim?')
+    return window.confirm(translateUi('Há alterações não salvas neste cadastro. Deseja sair mesmo assim?'))
   })
 
   return {

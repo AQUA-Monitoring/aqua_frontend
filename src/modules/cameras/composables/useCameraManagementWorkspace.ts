@@ -1,3 +1,4 @@
+import { translateUi } from '@/app/i18n'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import type { RouteLocationNormalizedLoaded, Router } from 'vue-router'
@@ -237,7 +238,7 @@ export function useCameraManagementWorkspace(
   }
 
   function confirmNativeDiscard() {
-    return !dirty.value || window.confirm('Há alterações não salvas. Deseja descartá-las?')
+    return !dirty.value || window.confirm(translateUi('Há alterações não salvas. Deseja descartá-las?'))
   }
 
   function handleBeforeUnload(event: BeforeUnloadEvent) {

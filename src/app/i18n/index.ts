@@ -11,6 +11,10 @@ const translatedAttributes = ['aria-label', 'aria-description', 'placeholder', '
 
 export function formatLocale() { return locale.value === 'en' ? 'en-US' : 'pt-BR' }
 
+export function translateUi(value: string) {
+  return locale.value === 'en' ? translateLegacyPhrase(value) ?? value : value
+}
+
 function translateLegacyPhrase(value: string) {
   const exact = legacyEnglish[value]
   if (exact) return exact

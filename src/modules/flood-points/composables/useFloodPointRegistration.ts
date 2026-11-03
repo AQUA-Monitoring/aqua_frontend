@@ -1,3 +1,4 @@
+import { translateUi } from '@/app/i18n'
 import { formatLocale } from '@/app/i18n'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
@@ -373,7 +374,7 @@ export function useFloodPointRegistration() {
   onBeforeRouteLeave(() => {
     if (allowNavigation.value || !hasUnsavedChanges.value) return true
     return window.confirm(
-      'Há um cadastro em andamento. Deseja sair e manter o rascunho para depois?',
+      translateUi('Há um cadastro em andamento. Deseja sair e manter o rascunho para depois?'),
     )
   })
 

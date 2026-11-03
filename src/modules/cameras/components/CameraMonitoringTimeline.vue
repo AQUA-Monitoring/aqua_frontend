@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { translateUi } from '@/app/i18n'
 import { formatLocale } from '@/app/i18n'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import api from '@/app/plugins/axios'
@@ -94,7 +95,7 @@ async function review() {
 }
 async function preserveEvidence(item: Run['evidence'][number]) {
   const keep = !item.preserved
-  if (!keep && !window.confirm('Ao deixar de guardar, imagens com mais de 15 dias serão apagadas na próxima limpeza. Continuar?')) return
+  if (!keep && !window.confirm(translateUi('Ao deixar de guardar, imagens com mais de 15 dias serão apagadas na próxima limpeza. Continuar?'))) return
   busy.value = true
   try {
     const { data } = await api.patch(`/flood_monitoring/evidence/${item.id}/`, { preserved: keep })

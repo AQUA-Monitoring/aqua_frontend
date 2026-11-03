@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { translateUi } from '@/app/i18n'
 import { formatLocale } from '@/app/i18n'
 import { ref, onMounted, reactive } from 'vue'
 import { loadMercadoPago } from '@mercadopago/sdk-js'
@@ -165,7 +166,7 @@ async function handlePayment() {
     return true
   } catch (error) {
     console.error('Erro ao criar pagamento Pix:', error)
-    alert('Ocorreu um erro ao processar o pagamento. Tente novamente.')
+    alert(translateUi('Ocorreu um erro ao processar o pagamento. Tente novamente.'))
     return false
   }
 }
