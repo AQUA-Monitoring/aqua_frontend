@@ -268,12 +268,12 @@ function move(offset: number) {
             <span class="material-symbols-outlined" aria-hidden="true">chevron_right</span>
           </button>
         </div>
-        <div class="flex">
-          <div v-if="presented" class="mt-3">
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <div v-if="presented" class="min-w-0 max-w-full">
             <CameraStatusBadge :camera="presented" />
           </div>
           <p v-if="presented && isPriorityCamera(presented)"
-            class="ml-auto text-right text-xs text-slate-500 dark:text-slate-400">
+            class="ml-auto shrink-0 text-right text-xs text-slate-500 dark:text-slate-400">
             <span class="block">Última análise</span>
             <span class="font-medium text-slate-700 dark:text-slate-200">
               {{ formatCameraDate(presented.operational.analysis.analyzed_at) }}

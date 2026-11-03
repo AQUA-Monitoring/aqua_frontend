@@ -9,10 +9,10 @@ const presentation = computed(() => cameraPresentation(props.camera))
 
 <template>
   <span
-    class="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold"
+    class="inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-1.5 text-left text-xs leading-4 font-semibold"
     :class="cameraToneClasses(presentation.tone)"
   >
-    <span class="size-2 rounded-full bg-current" aria-hidden="true"></span>
-    {{ presentation.label }}
+    <span class="size-2 shrink-0 rounded-full bg-current" aria-hidden="true"></span>
+    <span class="min-w-0">{{ presentation.label }}</span>
   </span>
 </template>
