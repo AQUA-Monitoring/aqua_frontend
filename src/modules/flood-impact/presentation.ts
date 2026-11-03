@@ -1,3 +1,4 @@
+import { formatLocale } from '@/app/i18n'
 import axios from 'axios'
 import type {
   FloodEvidenceKind,
@@ -48,19 +49,19 @@ export const relationLabels: Record<FloodImpactRelation, string> = {
 export function formatDate(value?: string | null) {
   if (!value) return 'Não informado'
   const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? 'Data inválida' : date.toLocaleString('pt-BR')
+  return Number.isNaN(date.getTime()) ? 'Data inválida' : date.toLocaleString(formatLocale())
 }
 
 export function formatLength(value: number) {
   if (!Number.isFinite(value)) return 'Não informado'
   return value >= 1000
-    ? `${(value / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} km`
-    : `${value.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} m`
+    ? `${(value / 1000).toLocaleString(formatLocale(), { maximumFractionDigits: 2 })} km`
+    : `${value.toLocaleString(formatLocale(), { maximumFractionDigits: 1 })} m`
 }
 
 export function formatFraction(value: number) {
   if (!Number.isFinite(value)) return 'Não informado'
-  return `${(Math.max(0, value) * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`
+  return `${(Math.max(0, value) * 100).toLocaleString(formatLocale(), { maximumFractionDigits: 1 })}%`
 }
 
 export function datasetLabel(run?: FloodImpactRunSummary | null) {

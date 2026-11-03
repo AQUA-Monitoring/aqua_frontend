@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatLocale } from '@/app/i18n'
 import { computed, nextTick, ref } from 'vue'
 import api from '@/app/plugins/axios'
 
@@ -62,7 +63,7 @@ const justification = computed(() =>
   [...selectedReasons.value, extra.value.trim()].filter(Boolean).join('. '),
 )
 const title = (value: string) => options.find((option) => option.value === value)?.title || value
-const percent = (value: number) => `${value.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`
+const percent = (value: number) => `${value.toLocaleString(formatLocale(), { maximumFractionDigits: 1 })}%`
 function choose(value: string) {
   decision.value = value
   selectedReasons.value = []
@@ -123,7 +124,7 @@ async function save() {
 
 <template>
   <div class="guided-review">
-    <p>{{ cameraName }} · {{ new Date(item.captured_at).toLocaleString('pt-BR') }}</p>
+    <p>{{ cameraName }} · {{ new Date(item.captured_at).toLocaleString(formatLocale()) }}</p>
     <button
       v-if="preview && !failedImage"
       type="button"
@@ -220,7 +221,7 @@ async function save() {
       </p>
       <p>Justificativa registrada: {{ item.label.reason }}</p>
       <p>
-        Revisada em {{ new Date(item.label.created_at).toLocaleString('pt-BR') }}. Correções
+        Revisada em {{ new Date(item.label.created_at).toLocaleString(formatLocale()) }}. Correções
         preservam as decisões anteriores.
       </p>
       <p>Concordância nesta fila não mede a acurácia geral do modelo.</p>

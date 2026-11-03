@@ -1,3 +1,4 @@
+import { formatLocale } from '@/app/i18n'
 import type {
   FloodDemoPrediction,
   FloodDemoPredictionBatch,
@@ -175,7 +176,7 @@ export function floodDemoTemporalRows(
       offset === 0
         ? labels.label
         : Number.isFinite(elapsedSeconds)
-          ? `Aprox. ${elapsedSeconds.toLocaleString('pt-BR')} s antes`
+          ? `Aprox. ${elapsedSeconds.toLocaleString(formatLocale())} s antes`
           : labels.fallbackLabel
     const prediction =
       item?.status === 'available' && item.prediction && hasFloodDemoAnalysis(item.prediction)

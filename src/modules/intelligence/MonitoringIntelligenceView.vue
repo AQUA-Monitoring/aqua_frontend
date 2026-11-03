@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatLocale } from '@/app/i18n'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import api from '@/app/plugins/axios'
 import GuidedImageReview from './GuidedImageReview.vue'
@@ -195,10 +196,10 @@ const reasonLabels: Record<string, string> = {
   NORMAL_AUDIT: 'Auditoria de normalidade',
 }
 const percent = (v: number | null | undefined) =>
-  v == null ? 'Sem medição' : `${(v * 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`
-const date = (v: string) => new Date(v).toLocaleString('pt-BR')
+  v == null ? 'Sem medição' : `${(v * 100).toLocaleString(formatLocale(), { maximumFractionDigits: 1 })}%`
+const date = (v: string) => new Date(v).toLocaleString(formatLocale())
 const size = (v: number) =>
-  `${(v / 1024 ** 3).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} GiB`
+  `${(v / 1024 ** 3).toLocaleString(formatLocale(), { maximumFractionDigits: 2 })} GiB`
 const currentPage = computed(
   () => [episodes.value, datasets.value, jobs.value, models.value][tab.value]!,
 )

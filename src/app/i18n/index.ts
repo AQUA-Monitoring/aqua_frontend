@@ -7,11 +7,18 @@ const locale = ref<AppLocale>('pt-BR')
 const translatedValues = new Set(Object.values(legacyEnglish))
 const originalText = new WeakMap<Text, string>()
 const originalAttributes = new WeakMap<Element, Map<string, string>>()
-const translatedAttributes = ['aria-label', 'placeholder', 'title']
+const translatedAttributes = ['aria-label', 'aria-description', 'placeholder', 'title', 'alt']
+
+export function formatLocale() { return locale.value === 'en' ? 'en-US' : 'pt-BR' }
 
 function translateLegacyPhrase(value: string) {
   const exact = legacyEnglish[value]
   if (exact) return exact
+  const separator = value.indexOf(': ')
+  if (separator > 0) {
+    const label = legacyEnglish[value.slice(0, separator + 1)] ?? legacyEnglish[value.slice(0, separator)]
+    if (label) return `${label.replace(/:$/, '')}: ${value.slice(separator + 2)}`
+  }
   const patterns: Array<[RegExp, (...matches: string[]) => string]> = [
     [/^(\d+) câmeras? encontradas?$/, (count) => `${count} ${count === '1' ? 'camera found' : 'cameras found'}`],
     [/^(\d+) câmeras? com localização$/, (count) => `${count} ${count === '1' ? 'camera with a location' : 'cameras with locations'}`],
@@ -21,6 +28,16 @@ function translateLegacyPhrase(value: string) {
     [/^Página (\d+)$/, (page) => `Page ${page}`],
     [/^Remover região (.+)$/, (name) => `Remove region ${name}`],
     [/^Remover bairro (.+)$/, (name) => `Remove neighborhood ${name}`],
+    [/^Página (\d+) · (.+) resultado\(s\)$/, (page, count) => `Page ${page} · ${count} result(s)`],
+    [/^Página (\d+) · (\d+) sequências$/, (page, count) => `Page ${page} · ${count} sequences`],
+    [/^©\s*(\d+)\s*- Todos os direitos reservados\s*-?$/, (year) => `© ${year} - All rights reserved`],
+    [/^(\d+) indícios abertos$/, (count) => `${count} open indications`],
+    [/^Evidência de (.+)$/, (name) => `Evidence from ${name}`],
+    [/^Evidência ampliada de (.+)$/, (name) => `Enlarged evidence from ${name}`],
+    [/^Inclui as (\d+) regiões disponíveis\. Você pode desmarcar depois\.$/, (count) => `Includes all ${count} available regions. You can unfollow them later.`],
+    [/^Aprox\. (.+) s antes$/, (seconds) => `Approx. ${seconds} s earlier`],
+    [/^A transmissão está cerca de (\d+) segundos atrasada\.$/, (seconds) => `The stream is about ${seconds} seconds behind.`],
+    [/^Expira em (\d+) segundos$/, (seconds) => `Expires in ${seconds} seconds`],
   ]
   for (const [pattern, replacement] of patterns) {
     const match = value.match(pattern)
@@ -119,7 +136,7 @@ function translateLegacyNode(node: Node) {
     const normalized = node.data.trim().replaceAll(/\s+/g, ' ')
     if (locale.value === 'pt-BR') {
       const original = originalText.get(node)
-      if (original !== undefined) node.data = original
+      if (original !== undefined && node.data !== original) node.data = original
       return
     }
     const translated = translateLegacyPhrase(normalized)
@@ -131,12 +148,13 @@ function translateLegacyNode(node: Node) {
     return
   }
   if (!(node instanceof Element)) return
+  if (node.matches('script, style, textarea, [translate="no"]')) return
   for (const attribute of translatedAttributes) {
     const value = node.getAttribute(attribute)
     if (!value) continue
     if (locale.value === 'pt-BR') {
       const original = originalAttributes.get(node)?.get(attribute)
-      if (original !== undefined) node.setAttribute(attribute, original)
+      if (original !== undefined && value !== original) node.setAttribute(attribute, original)
       continue
     }
     const translated = translateLegacyPhrase(value.trim().replaceAll(/\s+/g, ' '))
@@ -154,10 +172,11 @@ function installLegacyTranslator() {
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       if (mutation.type === 'characterData') translateLegacyNode(mutation.target)
+      else if (mutation.type === 'attributes') translateLegacyNode(mutation.target)
       else for (const node of mutation.addedNodes) translateLegacyNode(node)
     }
   })
-  observer.observe(document.documentElement, { childList: true, characterData: true, subtree: true })
+  observer.observe(document.documentElement, { childList: true, characterData: true, attributes: true, attributeFilter: translatedAttributes, subtree: true })
   watch(locale, () => queueMicrotask(translateDocument), { immediate: true })
 }
 

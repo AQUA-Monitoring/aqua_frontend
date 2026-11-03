@@ -1,3 +1,4 @@
+import { formatLocale } from '@/app/i18n'
 import type {
   FloodPointApiItem,
   FloodPointNeighborhood,
@@ -64,7 +65,7 @@ export const formatFloodPointNeighborhoodSummary = (
 export const formatNeighborhoodProportion = (fraction: number | null): string | null => {
   if (fraction === null || fraction < 0) return null
   const percentage = fraction <= 1 ? fraction * 100 : fraction
-  return new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 }).format(percentage) + '%'
+  return new Intl.NumberFormat(formatLocale(), { maximumFractionDigits: 1 }).format(percentage) + '%'
 }
 
 export const adaptFloodPoint = (

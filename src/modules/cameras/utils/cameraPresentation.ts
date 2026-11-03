@@ -1,3 +1,4 @@
+import { formatLocale } from '@/app/i18n'
 import type { CameraAnalysisStatus, CameraApiItem, CameraClassification } from '../types/camera'
 import type { CameraWithPrediction } from '@/modules/forecast'
 import { formatTerritoryLabel } from '@/shared'
@@ -161,7 +162,7 @@ export function formatCameraDate(value: string | null) {
   if (!value) return 'Não disponível'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return 'Não disponível'
-  return new Intl.DateTimeFormat('pt-BR', {
+  return new Intl.DateTimeFormat(formatLocale(), {
     dateStyle: 'short',
     timeStyle: 'short',
   }).format(date)
@@ -169,7 +170,7 @@ export function formatCameraDate(value: string | null) {
 
 export function formatNullablePercent(value: number | null) {
   if (value === null || !Number.isFinite(value)) return 'Não disponível'
-  return `${Math.min(100, Math.max(0, value)).toLocaleString('pt-BR', {
+  return `${Math.min(100, Math.max(0, value)).toLocaleString(formatLocale(), {
     minimumFractionDigits: 1,
     maximumFractionDigits: 1,
   })}%`

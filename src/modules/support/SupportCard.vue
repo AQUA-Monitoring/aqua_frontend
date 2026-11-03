@@ -41,7 +41,7 @@ defineProps<{
     </div>
 
     <RouterLink
-      :to="`/chat/${support.id}`"
+      :to="$localePath(`/chat/${support.id}`)"
       class="block w-full rounded-full border-2 border-[#2768CA] py-2 text-center font-semibold text-[#2768CA] mt-4"
     >
       Ver detalhes

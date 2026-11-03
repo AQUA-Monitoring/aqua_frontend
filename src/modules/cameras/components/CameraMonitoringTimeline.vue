@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatLocale } from '@/app/i18n'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import api from '@/app/plugins/axios'
 
@@ -126,12 +127,12 @@ onBeforeUnmount(() => { ++requestId; if (preview.value) URL.revokeObjectURL(prev
     <div v-if="monitoring" class="space-y-1 rounded-lg bg-slate-100 p-3 text-sm dark:bg-slate-800" aria-live="polite">
       <p class="font-medium">{{ schedulingLabels[monitoring.scheduling_status] }}</p>
       <p>Intervalo previsto: {{ monitoring.interval_seconds / 60 }} min após a conclusão.</p>
-      <p>Próxima análise prevista: {{ new Date(monitoring.next_analysis_at).toLocaleString('pt-BR') }}</p>
+      <p>Próxima análise prevista: {{ new Date(monitoring.next_analysis_at).toLocaleString(formatLocale()) }}</p>
       <p v-if="monitoring.delay_seconds > 0 && ['DUE', 'WAITING_CAPACITY'].includes(monitoring.scheduling_status)">
         Atraso no agendamento: {{ Math.ceil(monitoring.delay_seconds) }} s.
       </p>
       <p>{{ trendLabel }}</p>
-      <p v-if="monitoring.trend.values.length">Índice nas últimas análises: {{ monitoring.trend.values.map(value => `${value.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`).join(' → ') }}.</p>
+      <p v-if="monitoring.trend.values.length">Índice nas últimas análises: {{ monitoring.trend.values.map(value => `${value.toLocaleString(formatLocale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`).join(' → ') }}.</p>
       <p class="text-xs">O índice é uma estimativa do modelo, não uma medida da altura da água. Os horários dependem da capacidade disponível.</p>
       <p v-if="capacity">{{ capacityLabels[capacity.status] }}</p>
     </div>
@@ -157,7 +158,7 @@ onBeforeUnmount(() => { ++requestId; if (preview.value) URL.revokeObjectURL(prev
     </div>
     <ol class="aqua-scrollbar max-h-96 space-y-3 overflow-y-auto pr-1">
       <li v-for="run in runs" :key="run.id" class="rounded border border-slate-200 p-3 dark:border-slate-700">
-        <p>{{ new Date(run.started_at).toLocaleString('pt-BR') }} · {{ run.level }}</p>
+        <p>{{ new Date(run.started_at).toLocaleString(formatLocale()) }} · {{ run.level }}</p>
         <p class="text-xs">Modelo {{ run.model_version || 'indisponível' }} · {{ run.frames.length }} frames</p>
         <p v-if="run.error_code" class="text-sm text-amber-700">Falha: {{ run.error_code }}</p>
         <div class="mt-2 flex flex-wrap gap-2">

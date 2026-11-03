@@ -34,7 +34,7 @@ export function loadGoogleIdentity(): Promise<GoogleIdentity> {
   if (loading) return loading
   loading = new Promise<GoogleIdentity>((resolve, reject) => {
     const script = document.createElement('script')
-    script.src = 'https://accounts.google.com/gsi/client?hl=pt-BR'
+    script.src = `https://accounts.google.com/gsi/client?hl=${document.documentElement.lang}`
     script.async = true
     const timeout = window.setTimeout(fail, 15_000)
     function fail() {

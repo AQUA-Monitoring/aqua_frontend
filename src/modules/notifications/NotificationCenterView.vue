@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatLocale } from '@/app/i18n'
 import { computed, onMounted, ref, watch } from 'vue'
 import { toast } from 'vue3-toastify'
 import OperationalAlertsView from './OperationalAlertsView.vue'
@@ -29,7 +30,7 @@ async function onPublished() {
 }
 const formatDate = (value: string | null) =>
   value
-    ? new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(
+    ? new Intl.DateTimeFormat(formatLocale(), { dateStyle: 'short', timeStyle: 'short' }).format(
         new Date(value),
       )
     : '—'

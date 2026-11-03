@@ -63,10 +63,10 @@ function applicationRoutes(english = false): RouteRecordRaw[] {
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    { path: '/en', name: 'about-en', meta: { titleKey: 'route.about' }, component: () => import('../../views/AboutView.vue') },
     ...applicationRoutes(),
     ...applicationRoutes(true),
     { path: '/sobre', name: 'about', meta: { titleKey: 'route.about' }, component: () => import('../../views/AboutView.vue') },
-    { path: '/en', name: 'about-en', meta: { titleKey: 'route.about' }, component: () => import('../../views/AboutView.vue') },
     { path: '/en/about', redirect: '/en' },
     { path: '/:pathMatch(.*)*', name: 'not-found', meta: { titleKey: 'route.notFound' }, component: () => import('../../views/NotFoundView.vue') },
   ],

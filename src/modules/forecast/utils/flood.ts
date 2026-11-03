@@ -1,3 +1,4 @@
+import { formatLocale } from '@/app/i18n'
 import type { CameraWithPrediction } from '@/modules/forecast'
 
 export const displayPercent = (p: number) => Math.round(p)
@@ -32,7 +33,7 @@ export function displayFloodPercent(cam: CameraWithPrediction): number | null {
 export function formatFloodPercent(cam: CameraWithPrediction): string {
   const value = displayFloodPercent(cam)
   if (value === null) return 'Não disponível'
-  return value.toLocaleString('pt-BR', {
+  return value.toLocaleString(formatLocale(), {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })

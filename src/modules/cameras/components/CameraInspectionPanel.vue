@@ -321,7 +321,7 @@ onBeforeUnmount(() => {
     </div>
 
     <RouterLink
-      :to="`/cameras/${camera.id}`"
+      :to="$localePath(`/cameras/${camera.id}`)"
       class="mt-4 flex min-h-11 items-center justify-center rounded-xl border border-[#2768CA] px-4 py-2 text-sm font-semibold text-[#2768CA] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#2768CA]"
     >
       Abrir página da câmera

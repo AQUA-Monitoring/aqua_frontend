@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatLocale } from '@/app/i18n'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { toast } from 'vue3-toastify'
 import { useTerritoryCatalog } from '@/modules/addressing'
@@ -57,7 +58,7 @@ const statusStyles: Record<OperationalAlertStatus, string> = {
 }
 
 const formatDate = (value: string) =>
-  new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(
+  new Intl.DateTimeFormat(formatLocale(), { dateStyle: 'short', timeStyle: 'short' }).format(
     new Date(value),
   )
 const percent = (value: number) => `${Math.round(value * (value <= 1 ? 100 : 1))}%`
@@ -492,7 +493,7 @@ onBeforeUnmount(() => {
               class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-300/20 dark:bg-amber-300/10 dark:text-amber-100">
               <strong>Localização territorial pendente.</strong> Revise a localização da câmera para vinculá-la a uma
               região ativa da Base georreferenciada oficial.
-              <RouterLink :to="`/admin/cameras/${alert.camera.id}/localizacao`"
+              <RouterLink :to="$localePath(`/admin/cameras/${alert.camera.id}/localizacao`)"
                 class="ml-1 font-semibold underline underline-offset-4">Corrigir localização</RouterLink>
             </div>
           </div>

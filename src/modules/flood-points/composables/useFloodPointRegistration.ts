@@ -1,3 +1,4 @@
+import { formatLocale } from '@/app/i18n'
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import axios from 'axios'
@@ -109,7 +110,7 @@ export function useFloodPointRegistration() {
   )
   const previewFinishedAt = computed(() => {
     if (durationValue.value === null || durationValue.value <= 0) return null
-    return new Date(Date.now() + durationValue.value * 60000).toLocaleString('pt-BR', {
+    return new Date(Date.now() + durationValue.value * 60000).toLocaleString(formatLocale(), {
       weekday: 'short',
       day: '2-digit',
       month: '2-digit',

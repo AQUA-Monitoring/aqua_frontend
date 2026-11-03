@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatLocale } from '@/app/i18n'
 import CameraPreview from './CameraPreview.vue'
 import CameraStatusBadge from './CameraStatusBadge.vue'
 import type { NearbyCameraItem } from '../types/camera'
@@ -16,7 +17,7 @@ const emit = defineEmits<{ select: [camera: NearbyCameraItem] }>()
 
 function distanceLabel(distance: number) {
   if (distance < 1000) return `${Math.round(distance)} m`
-  return `${(distance / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} km`
+  return `${(distance / 1000).toLocaleString(formatLocale(), { maximumFractionDigits: 1 })} km`
 }
 </script>
 

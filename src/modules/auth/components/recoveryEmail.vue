@@ -19,8 +19,7 @@ const onSubmit = (values: FormValues) => {
     <h1 class="font-semibold text-2xl text-center mb-5 hidden lg:block">Recuperação</h1>
 
     <p class="text-center mb-8">
-      Essa conta está vinculada ao email nicfmello@gmail.com. Confirme o seu email no campo abaixo
-      para receber um código de recuperação:
+      {{ $l('Informe o email da sua conta para receber um código de recuperação.', 'Enter your account email to receive a recovery code.') }}
     </p>
     <div class="flex justify-center">
       <BaseForm :form-fields="recoveryFields" button-text="Continuar" @submit="onSubmit" />

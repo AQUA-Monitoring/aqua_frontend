@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatLocale } from '@/app/i18n'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { toast } from 'vue3-toastify'
 import type { MultiPolygon } from 'geojson'
@@ -279,7 +280,7 @@ onMounted(async () => {
             <p v-if="!impact.loading && !impact.events.length" class="p-3 text-sm text-slate-500">Nenhum evento encontrado.</p>
             <button v-for="event in impact.events" :key="event.id" type="button" class="mt-2 w-full rounded-xl border p-3 text-left text-sm" :class="selectedEventId === event.id ? 'border-[#2768CA] bg-blue-50 text-slate-900' : 'border-slate-200 dark:border-slate-700'" @click="chooseEvent(event)">
               <span class="font-semibold">{{ evidenceLabels[event.evidence_kind] }}</span>
-              <span class="mt-1 block">{{ statusLabels[event.status] }} · {{ new Date(event.valid_from).toLocaleString('pt-BR') }}</span>
+              <span class="mt-1 block">{{ statusLabels[event.status] }} · {{ new Date(event.valid_from).toLocaleString(formatLocale()) }}</span>
             </button>
           </div>
 
@@ -343,7 +344,7 @@ onMounted(async () => {
             <p class="mt-3 text-xs text-slate-500">As áreas do histórico são derivadas e não confirmam bloqueios viários.</p>
             <ul v-if="impact.selectedHotspot.nearby_cameras?.length" class="mt-3 space-y-2 text-sm">
               <li v-for="camera in impact.selectedHotspot.nearby_cameras" :key="camera.id" class="rounded-lg bg-slate-100 p-2 dark:bg-[#071F36]">
-                <RouterLink :to="`/cameras/${camera.id}`" class="font-semibold text-[#2768CA]">{{ camera.description }}</RouterLink>
+                <RouterLink :to="$localePath(`/cameras/${camera.id}`)" class="font-semibold text-[#2768CA]">{{ camera.description }}</RouterLink>
                 <span v-if="camera.distance_m !== undefined" class="block">{{ Math.round(camera.distance_m) }} m do ponto crítico</span>
               </li>
             </ul>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatLocale } from '@/app/i18n'
 import { evidenceLabels, formatDate, formatLength, statusLabels } from '../presentation'
 import type { FloodHotspot, FloodHotspotHistoryItem, PageState } from '../types/floodImpact'
 import FloodImpactPagination from './FloodImpactPagination.vue'
@@ -40,7 +41,7 @@ const emit = defineEmits<{
       <button v-for="hotspot in hotspots" :key="hotspot.id" type="button" class="w-full rounded-xl border p-3 text-left text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2768CA]" :class="selected?.id === hotspot.id ? 'border-[#2768CA] bg-blue-50 text-slate-950' : 'border-slate-200 dark:border-slate-700'" :aria-pressed="selected?.id === hotspot.id" @click="emit('select', hotspot)">
         <span class="font-semibold">{{ hotspot.name || hotspot.spatial_unit }}</span>
         <span class="mt-1 block">{{ hotspot.event_count }} evento(s) · {{ formatLength(hotspot.affected_length_m) }}</span>
-        <span class="mt-1 block text-xs text-slate-500">Índice {{ hotspot.recurrence_score.toLocaleString('pt-BR') }} · {{ hotspot.confirmed_event_count }} confirmado(s)</span>
+        <span class="mt-1 block text-xs text-slate-500">Índice {{ hotspot.recurrence_score.toLocaleString(formatLocale()) }} · {{ hotspot.confirmed_event_count }} confirmado(s)</span>
       </button>
     </div>
     <FloodImpactPagination class="mt-3" :page="page" :disabled="loading || refreshing" label="Paginação de recorrências" @change="emit('page', $event)" />
@@ -62,7 +63,7 @@ const emit = defineEmits<{
         <h3 class="font-semibold">Câmeras próximas para inspeção</h3>
         <ul class="mt-2 space-y-2 text-sm">
           <li v-for="camera in selected.nearby_cameras" :key="camera.id" class="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
-            <RouterLink :to="`/cameras/${camera.id}`" class="font-semibold text-[#2768CA] underline-offset-2 hover:underline">{{ camera.description }}</RouterLink>
+            <RouterLink :to="$localePath(`/cameras/${camera.id}`)" class="font-semibold text-[#2768CA] underline-offset-2 hover:underline">{{ camera.description }}</RouterLink>
             <span v-if="camera.distance_m !== undefined" class="block text-xs text-slate-500">{{ Math.round(camera.distance_m) }} m do agrupamento</span>
           </li>
         </ul>

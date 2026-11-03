@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatLocale } from '@/app/i18n'
 import { computed } from 'vue'
 import {
   FLOOD_DEMO_STATES,
@@ -29,7 +30,7 @@ const slots = computed(() =>
 
 function formatSize(value: number | null | undefined) {
   if (value == null) return 'Tamanho não disponível'
-  return new Intl.NumberFormat('pt-BR', {
+  return new Intl.NumberFormat(formatLocale(), {
     style: 'unit',
     unit: value >= 1_000_000 ? 'megabyte' : 'kilobyte',
     maximumFractionDigits: 1,
@@ -41,7 +42,7 @@ function formatDate(value: string | null | undefined) {
   const date = new Date(value)
   return Number.isNaN(date.getTime())
     ? 'Data não disponível'
-    : new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(date)
+    : new Intl.DateTimeFormat(formatLocale(), { dateStyle: 'short', timeStyle: 'short' }).format(date)
 }
 
 function chooseFile(mode: FloodDemoState, event: Event) {

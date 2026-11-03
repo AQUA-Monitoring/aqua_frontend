@@ -33,7 +33,7 @@ function renderButton() {
   button.value.replaceChildren()
   identity.renderButton(button.value, {
     type: 'standard', theme, shape: 'pill', logo_alignment: 'left', size: 'large',
-    text: props.mode === 'register' ? 'signup_with' : 'signin_with', width, locale: 'pt-BR',
+    text: props.mode === 'register' ? 'signup_with' : 'signin_with', width, locale: document.documentElement.lang,
   })
 }
 

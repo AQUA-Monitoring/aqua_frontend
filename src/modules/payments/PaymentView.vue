@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatLocale } from '@/app/i18n'
 import { ref, onMounted, reactive } from 'vue'
 import { loadMercadoPago } from '@mercadopago/sdk-js'
 import { BaseForm, StepByStep } from '@/shared'
@@ -13,7 +14,7 @@ const paymentForm = ref<{
 const paymentStore = usePaymentStore()
 
 const dateNow = new Date()
-const dateFormat = new Intl.DateTimeFormat('pt-BR').format(dateNow)
+const dateFormat = new Intl.DateTimeFormat(formatLocale()).format(dateNow)
 
 onMounted(async () => {
   await loadMercadoPago()

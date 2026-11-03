@@ -31,7 +31,7 @@ defineProps<{
 
       <RouterLink
         v-if="camera"
-        :to="`/cameras/${camera.id}`"
+        :to="$localePath(`/cameras/${camera.id}`)"
         class="min-h-12 rounded-xl bg-emerald-700 px-5 py-3 font-semibold text-white"
       >
         Ver cadastro
