@@ -14,6 +14,7 @@ const props = defineProps<{
 const router = useRouter()
 const { isMobile } = useScreenSize()
 const { t, localePath } = useI18n()
+const isEnglishRoute = computed(() => router.currentRoute.value.path === '/en' || router.currentRoute.value.path.startsWith('/en/'))
 const openMenuId = ref<number | null>(null)
 const toggleMenu = (id: number) => {
   openMenuId.value = openMenuId.value === id ? null : id
@@ -159,7 +160,7 @@ const desktopMenuAccount = computed<MenuItem[]>(() => [
         <li>
           <ThemeSwitcher class="hidden lg:block" />
         </li>
-        <li><LanguageSwitcher /></li>
+        <li v-if="isEnglishRoute"><LanguageSwitcher /></li>
       </ul>
     </nav>
   </header>
