@@ -61,7 +61,7 @@ const desktopMenuAccount = computed<MenuItem[]>(() => [
 <template>
   <header
     v-if="!(isMobile && title === t('route.home'))"
-    class="z-10 bg-transparent px-7 lg:bg-white lg:px-20 xl:px-25 py-3 dark:bg-[#00182F] dark:text-white"
+    class="relative z-40 bg-transparent px-7 lg:bg-white lg:px-20 xl:px-25 py-3 dark:bg-[#00182F] dark:text-white"
   >
     <nav class="lg:flex lg:items-center lg:justify-between">
       <ul class="flex items-center justify-between lg:hidden">
@@ -108,7 +108,7 @@ const desktopMenuAccount = computed<MenuItem[]>(() => [
             <transition name="fade">
               <ul
                 v-if="openMenuId === item.id"
-                class="absolute -left-5 z-10 mt-2 grid w-[10vw] gap-2 rounded-lg bg-white px-5 py-5 shadow-lg dark:bg-[#000d19]"
+                class="absolute -left-5 z-50 mt-2 grid w-[10vw] gap-2 rounded-lg bg-white px-5 py-5 shadow-lg dark:bg-[#000d19]"
               >
                 <li
                   v-for="menu in item.options"
