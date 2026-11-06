@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import { useScreenSize } from '@/shared'
 import { useI18n } from '@/app/i18n'
+import LanguageSwitcher from './LanguageSwitcher.vue'
 
 const props = defineProps<{ title?: string; userType?: string | null }>()
 const { isMobile } = useScreenSize()
@@ -70,7 +71,11 @@ const getSemiCircleStyle = (index: number, total: number) => {
       v-if="openMenuId !== null"
       class="fixed inset-0 z-40 bg-white/60 backdrop-blur-[2px]"
       @click="openMenuId = null"
-    />
+    >
+      <div class="absolute right-5 bottom-28 rounded-full bg-white p-1 text-slate-700 shadow-lg dark:bg-[#001C3B] dark:text-white" @click.stop>
+        <LanguageSwitcher />
+      </div>
+    </div>
   </transition>
 
   <nav

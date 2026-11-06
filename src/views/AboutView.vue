@@ -2,7 +2,7 @@
 import { LanguageSwitcher } from '@/shared'
 import { useI18n } from '@/app/i18n'
 
-const { t, localePath, isEnglish } = useI18n()
+const { t, localePath } = useI18n()
 const capabilities = [
   ['map', 'about.mapTitle', 'about.mapText'],
   ['videocam', 'about.cameraTitle', 'about.cameraText'],
@@ -13,7 +13,7 @@ const capabilities = [
 <template>
   <article class="mx-auto grid w-full max-w-6xl gap-16 px-5 py-10 sm:px-8 lg:py-16">
     <section class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#00182F] via-[#0750AF] to-[#28A9E0] px-6 py-10 text-white shadow-xl sm:px-10 lg:px-16 lg:py-16">
-      <div v-if="isEnglish" class="absolute right-6 top-6"><LanguageSwitcher /></div>
+      <div class="mb-6 flex justify-end"><LanguageSwitcher /></div>
       <p class="mb-3 max-w-2xl text-sm font-semibold uppercase tracking-[0.18em] text-cyan-100">{{ t('about.eyebrow') }}</p>
       <h1 class="max-w-3xl text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">{{ t('about.title') }}</h1>
       <p class="mt-6 max-w-3xl text-lg leading-relaxed text-blue-50">{{ t('about.intro') }}</p>

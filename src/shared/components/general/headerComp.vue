@@ -14,7 +14,6 @@ const props = defineProps<{
 const router = useRouter()
 const { isMobile } = useScreenSize()
 const { t, localePath } = useI18n()
-const isEnglishRoute = computed(() => router.currentRoute.value.path === '/en' || router.currentRoute.value.path.startsWith('/en/'))
 const openMenuId = ref<number | null>(null)
 const toggleMenu = (id: number) => {
   openMenuId.value = openMenuId.value === id ? null : id
@@ -72,7 +71,8 @@ const desktopMenuAccount = computed<MenuItem[]>(() => [
           </button>
         </li>
         <li><img src="/icons/aqua.svg" alt="Aqua" class="ml-3" /></li>
-        <li>
+        <li class="flex items-center gap-2">
+          <LanguageSwitcher />
           <ThemeSwitcher />
         </li>
       </ul>
@@ -160,7 +160,7 @@ const desktopMenuAccount = computed<MenuItem[]>(() => [
         <li>
           <ThemeSwitcher class="hidden lg:block" />
         </li>
-        <li v-if="isEnglishRoute"><LanguageSwitcher /></li>
+        <li><LanguageSwitcher /></li>
       </ul>
     </nav>
   </header>
